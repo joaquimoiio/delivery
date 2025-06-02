@@ -1,0 +1,112 @@
+.menu-sidebar {
+  width: 200px;
+  background-color: var(--secondary-color);
+  min-height: 100vh;
+  transition: width var(--transition-medium);
+  border-right: 1px solid var(--border-color);
+  position: relative;
+}
+
+.menu-sidebar.collapsed {
+  width: 60px;
+}
+
+.menu-header {
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-start;
+}
+
+.menu-toggle {
+  background: var(--primary-color);
+  border: none;
+  color: var(--text-primary);
+  padding: var(--spacing-sm) 12px;
+  cursor: pointer;
+  border-radius: var(--border-radius-sm);
+  font-size: 14px;
+  transition: background-color var(--transition-fast);
+}
+
+.menu-toggle:hover {
+  background: var(--primary-hover);
+}
+
+.menu-navigation {
+  padding: var(--spacing-md) 0;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 12px var(--spacing-md);
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--transition-fast);
+  font-size: 14px;
+  position: relative;
+}
+
+.menu-item:hover {
+  background-color: var(--background-light);
+  color: var(--text-primary);
+}
+
+.menu-item.active {
+  background-color: var(--border-color);
+  color: var(--text-primary);
+  border-right: 3px solid var(--primary-color);
+}
+
+.menu-icon {
+  margin-right: 12px;
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+  transition: margin var(--transition-medium);
+}
+
+.menu-text {
+  font-weight: 400;
+  transition: opacity var(--transition-medium);
+}
+
+.collapsed .menu-text {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+}
+
+.collapsed .menu-icon {
+  margin-right: 0;
+}
+
+@media (max-width: 768px) {
+  .menu-sidebar {
+    width: 100%;
+    min-height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .menu-sidebar.collapsed {
+    width: 100%;
+  }
+
+  .menu-navigation {
+    display: flex;
+    overflow-x: auto;
+    padding: var(--spacing-sm);
+  }
+
+  .menu-item {
+    min-width: 120px;
+    justify-content: center;
+    margin-right: var(--spacing-sm);
+  }
+}

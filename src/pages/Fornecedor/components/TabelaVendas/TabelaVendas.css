@@ -1,0 +1,126 @@
+.tabela-relatorios {
+  flex: 1;
+  background-color: var(--background-medium);
+  min-height: 100vh;
+}
+
+.tabela-header {
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--secondary-color);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.tabela-header h2 {
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  font-weight: 400;
+}
+
+.tabela-content {
+  padding: var(--spacing-xl);
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.relatorios-table {
+  width: 100%;
+  background-color: var(--background-light);
+  border-collapse: collapse;
+  min-width: 700px;
+}
+
+.relatorios-table thead {
+  background-color: var(--secondary-color);
+}
+
+.relatorios-table th {
+  padding: var(--spacing-md);
+  text-align: left;
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 14px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.relatorios-table td {
+  padding: var(--spacing-md);
+  color: var(--text-secondary);
+  font-size: 14px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.relatorios-table tbody tr:hover {
+  background-color: var(--border-color);
+}
+
+.relatorios-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.status {
+  padding: 4px var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  display: inline-block;
+}
+
+.status.concluido {
+  background-color: rgba(34, 197, 94, 0.2);
+  color: var(--success-color);
+  border: 1px solid var(--success-color);
+}
+
+.status.pendente {
+  background-color: rgba(251, 191, 36, 0.2);
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+}
+
+.status.cancelado {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: var(--error-color);
+  border: 1px solid var(--error-color);
+}
+
+.detalhes-btn {
+  background-color: var(--primary-color);
+  color: var(--text-primary);
+  border: none;
+  padding: 6px 12px;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background-color var(--transition-fast);
+}
+
+.detalhes-btn:hover {
+  background-color: var(--primary-hover);
+}
+
+@media (max-width: 768px) {
+  .tabela-content {
+    padding: var(--spacing-md);
+  }
+
+  .relatorios-table th,
+  .relatorios-table td {
+    padding: var(--spacing-sm);
+    font-size: 12px;
+  }
+
+  .detalhes-btn {
+    padding: 4px var(--spacing-sm);
+    font-size: 10px;
+  }
+}

@@ -1,0 +1,121 @@
+.store-card {
+  background-color: #3a3a3a;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid #555;
+  cursor: pointer;
+  position: relative;
+}
+
+.store-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.store-image {
+  width: 100%;
+  height: 180px;
+  overflow: hidden;
+  position: relative;
+}
+
+.store-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.store-card:hover .store-image img {
+  transform: scale(1.05);
+}
+
+.store-promotion {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: #ff4444;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.store-info {
+  padding: 1.5rem;
+}
+
+.store-name {
+  color: white;
+  font-size: 1.3rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.store-description {
+  color: #cccccc;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin-bottom: 1rem;
+}
+
+.store-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.store-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #ffa726;
+  font-weight: 600;
+}
+
+.rating-star {
+  font-size: 0.9rem;
+}
+
+.store-delivery-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 0.85rem;
+  color: #cccccc;
+}
+
+.delivery-time {
+  font-weight: 600;
+  color: #4caf50;
+}
+
+.delivery-fee {
+  color: #ff4444;
+  font-weight: 500;
+}
+
+.store-coupon {
+  background-color: #4caf50;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .store-details {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .store-delivery-info {
+    align-items: flex-start;
+  }
+}

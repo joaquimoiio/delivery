@@ -1,0 +1,204 @@
+.cadastro-produtos {
+  flex: 1;
+  background-color: var(--background-medium);
+  min-height: 100vh;
+}
+
+.cadastro-header {
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--secondary-color);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.cadastro-header h2 {
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  font-weight: 400;
+}
+
+.cadastro-content {
+  padding: var(--spacing-xl);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-xl);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.produto-form {
+  background-color: var(--background-light);
+  padding: var(--spacing-xl);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+}
+
+.produto-form h2 {
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-lg);
+  font-size: 1.3rem;
+  font-weight: 400;
+}
+
+.form-row {
+  margin-bottom: var(--spacing-lg);
+}
+
+.form-row.two-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
+}
+
+.form-input,
+.form-textarea,
+.form-select {
+  width: 100%;
+  padding: 12px var(--spacing-md);
+  background-color: var(--secondary-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.2);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form-select {
+  cursor: pointer;
+}
+
+.form-select option {
+  background-color: var(--secondary-color);
+  color: var(--text-primary);
+}
+
+.submit-btn {
+  background-color: var(--primary-color);
+  color: var(--text-primary);
+  border: none;
+  padding: 12px 24px;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color var(--transition-fast);
+  width: 100%;
+}
+
+.submit-btn:hover {
+  background-color: var(--primary-hover);
+}
+
+.preview-section {
+  background-color: var(--background-light);
+  padding: var(--spacing-xl);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+}
+
+.preview-section h3 {
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-md);
+  font-size: 1.1rem;
+  font-weight: 400;
+}
+
+.product-preview {
+  background-color: var(--secondary-color);
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius);
+  text-align: center;
+}
+
+.preview-image {
+  max-width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: var(--border-radius-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.preview-info h4 {
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-sm);
+  font-size: 1.1rem;
+}
+
+.preview-info p {
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-sm);
+  font-size: 0.9rem;
+}
+
+.preview-price {
+  display: block;
+  color: var(--primary-color);
+  font-weight: bold;
+  font-size: 1.2rem;
+  margin-bottom: var(--spacing-sm);
+}
+
+.preview-category {
+  display: inline-block;
+  background-color: var(--border-color);
+  color: var(--text-primary);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  font-size: 0.8rem;
+  text-transform: capitalize;
+}
+
+.preview-description {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-family: inherit;
+  padding: 0;
+  margin: 0;
+  line-height: 1.4;
+  text-align: center;
+  word-wrap: break-word;
+}
+
+.preview-description:focus {
+  outline: none;
+}
+
+@media (max-width: 768px) {
+  .cadastro-content {
+    grid-template-columns: 1fr;
+    padding: var(--spacing-md);
+  }
+
+  .form-row.two-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .produto-form,
+  .preview-section {
+    padding: var(--spacing-lg);
+  }
+}

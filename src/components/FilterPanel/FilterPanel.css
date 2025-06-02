@@ -1,0 +1,553 @@
+/* src/components/FilterPanel/FilterPanel.css - Layout Reorganizado */
+.filter-toggle {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--background-light, #3a3a3a);
+  border: 1px solid var(--border-color, #555);
+  color: var(--text-primary, white);
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.filter-toggle:hover {
+  background-color: var(--background-medium, #2a2a2a);
+  border-color: var(--primary-color, #ff4444);
+}
+
+.filter-icon {
+  font-size: 16px;
+}
+
+.filter-badge {
+  background-color: var(--primary-color, #ff4444);
+  color: white;
+  border-radius: 10px;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  min-width: 18px;
+  text-align: center;
+}
+
+.filter-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 998;
+  display: none;
+}
+
+.filter-panel {
+  background-color: var(--background-light, #3a3a3a);
+  border: 1px solid var(--border-color, #555);
+  border-radius: 12px;
+  width: 280px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg, 0 8px 15px rgba(0, 0, 0, 0.2));
+  position: sticky;
+  top: 20px;
+}
+
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color, #555);
+  background-color: var(--background-medium, #2a2a2a);
+  border-radius: 12px 12px 0 0;
+}
+
+.filter-header h3 {
+  color: var(--text-primary, white);
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.filter-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.clear-filters-btn {
+  background: none;
+  border: 1px solid var(--primary-color, #ff4444);
+  color: var(--primary-color, #ff4444);
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  transition: all 0.2s ease;
+}
+
+.clear-filters-btn:hover {
+  background-color: var(--primary-color, #ff4444);
+  color: white;
+}
+
+.close-filters {
+  background: none;
+  border: none;
+  color: var(--text-muted, #888);
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px;
+  border-radius: 4px;
+  transition: color 0.2s ease;
+  display: none;
+}
+
+.close-filters:hover {
+  color: var(--text-primary, white);
+}
+
+.filter-content {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.filter-section {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 16px;
+}
+
+.filter-section:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.filter-section h4 {
+  color: var(--text-primary, white);
+  margin: 0 0 12px 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Filtros de Categoria - Layout Grid Compacto */
+.category-filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.category-filter-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 6px;
+  background-color: var(--background-medium, #2a2a2a);
+  border: 1px solid var(--border-color, #555);
+  border-radius: 6px;
+  color: var(--text-secondary, #cccccc);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  min-height: 60px;
+}
+
+.category-filter-btn:hover {
+  background-color: var(--background-dark, #1a1a1a);
+  border-color: var(--primary-color, #ff4444);
+}
+
+.category-filter-btn.active {
+  background-color: var(--primary-color, #ff4444);
+  border-color: var(--primary-color, #ff4444);
+  color: white;
+}
+
+.category-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.category-name {
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+/* Faixa de Preço - Layout Compacto */
+.price-range {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.price-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.price-input-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.price-input-group label {
+  color: var(--text-muted, #888);
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.price-input {
+  padding: 6px 8px;
+  background-color: var(--background-medium, #2a2a2a);
+  border: 1px solid var(--border-color, #555);
+  border-radius: 4px;
+  color: var(--text-primary, white);
+  font-size: 12px;
+}
+
+.price-input:focus {
+  outline: none;
+  border-color: var(--primary-color, #ff4444);
+}
+
+.price-separator {
+  color: var(--text-muted, #888);
+  font-size: 10px;
+  margin-top: 12px;
+}
+
+/* Filtros de Avaliação - Layout Horizontal */
+.rating-filters {
+  display: flex;
+  gap: 4px;
+}
+
+.rating-filter-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 4px;
+  background-color: var(--background-medium, #2a2a2a);
+  border: 1px solid var(--border-color, #555);
+  border-radius: 4px;
+  color: var(--text-secondary, #cccccc);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 10px;
+}
+
+.rating-filter-btn:hover {
+  border-color: var(--primary-color, #ff4444);
+}
+
+.rating-filter-btn.active {
+  background-color: var(--primary-color, #ff4444);
+  border-color: var(--primary-color, #ff4444);
+  color: white;
+}
+
+.stars {
+  font-size: 12px;
+}
+
+/* Filtros de Entrega - Layout Compacto */
+.delivery-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: var(--text-secondary, #cccccc);
+  font-size: 12px;
+}
+
+.checkbox-label input[type="checkbox"] {
+  display: none;
+}
+
+.checkbox-custom {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--border-color, #555);
+  border-radius: 2px;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.checkbox-label input[type="checkbox"]:checked + .checkbox-custom {
+  background-color: var(--primary-color, #ff4444);
+  border-color: var(--primary-color, #ff4444);
+}
+
+.checkbox-label input[type="checkbox"]:checked + .checkbox-custom::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.input-group label {
+  color: var(--text-muted, #888);
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.filter-input {
+  padding: 6px 8px;
+  background-color: var(--background-medium, #2a2a2a);
+  border: 1px solid var(--border-color, #555);
+  border-radius: 4px;
+  color: var(--text-primary, white);
+  font-size: 12px;
+}
+
+.filter-input:focus {
+  outline: none;
+  border-color: var(--primary-color, #ff4444);
+}
+
+/* Outros Filtros */
+.other-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Ordenação */
+.sort-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sort-select {
+  padding: 8px 10px;
+  background-color: var(--background-medium, #2a2a2a);
+  border: 1px solid var(--border-color, #555);
+  border-radius: 4px;
+  color: var(--text-primary, white);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.sort-select:focus {
+  outline: none;
+  border-color: var(--primary-color, #ff4444);
+}
+
+.sort-direction {
+  display: flex;
+  gap: 4px;
+}
+
+.sort-direction-btn {
+  flex: 1;
+  padding: 6px 8px;
+  background-color: var(--background-medium, #2a2a2a);
+  border: 1px solid var(--border-color, #555);
+  border-radius: 4px;
+  color: var(--text-secondary, #cccccc);
+  cursor: pointer;
+  font-size: 10px;
+  transition: all 0.2s ease;
+}
+
+.sort-direction-btn:hover {
+  border-color: var(--primary-color, #ff4444);
+}
+
+.sort-direction-btn.active {
+  background-color: var(--primary-color, #ff4444);
+  border-color: var(--primary-color, #ff4444);
+  color: white;
+}
+
+/* Raio de Busca */
+.radius-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.radius-slider {
+  width: 100%;
+  height: 4px;
+  background: var(--background-medium, #2a2a2a);
+  border-radius: 2px;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.radius-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--primary-color, #ff4444);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.radius-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: var(--primary-color, #ff4444);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+
+.radius-value {
+  text-align: center;
+  color: var(--text-primary, white);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.filter-footer {
+  display: none;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border-color, #555);
+  background-color: var(--background-medium, #2a2a2a);
+  border-radius: 0 0 12px 12px;
+}
+
+.apply-filters-btn {
+  width: 100%;
+  padding: 10px;
+  background-color: var(--primary-color, #ff4444);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.apply-filters-btn:hover {
+  background-color: var(--primary-hover, #e63946);
+}
+
+/* Scrollbar customizada */
+.filter-panel::-webkit-scrollbar {
+  width: 4px;
+}
+
+.filter-panel::-webkit-scrollbar-track {
+  background: var(--background-medium, #2a2a2a);
+}
+
+.filter-panel::-webkit-scrollbar-thumb {
+  background: var(--border-color, #555);
+  border-radius: 2px;
+}
+
+.filter-panel::-webkit-scrollbar-thumb:hover {
+  background: #666;
+}
+
+/* Responsividade */
+@media (max-width: 1024px) {
+  .filter-panel {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .filter-toggle {
+    display: flex;
+  }
+
+  .close-filters {
+    display: block;
+  }
+
+  .filter-overlay.open {
+    display: block;
+  }
+
+  .filter-panel {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 85%;
+    max-width: 320px;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+    z-index: 999;
+    transition: right 0.3s ease;
+  }
+
+  .filter-panel.open {
+    right: 0;
+  }
+
+  .filter-footer {
+    display: block;
+  }
+
+  .filter-header {
+    border-radius: 0;
+  }
+
+  .category-filters {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .filter-panel {
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .price-inputs {
+    flex-direction: column;
+    gap: 6px;
+  }
+  
+  .price-separator {
+    text-align: center;
+    margin: 0;
+  }
+
+  .category-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .rating-filters {
+    flex-direction: column;
+    gap: 6px;
+  }
+}

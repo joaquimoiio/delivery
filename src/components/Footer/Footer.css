@@ -1,0 +1,64 @@
+/* components/Footer/Footer.css */
+.footer {
+  background-color: var(--background-dark);
+  border-top: 1px solid #333;
+  padding: 2rem 0;
+  margin-top: auto;
+}
+
+.footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.footer-logo {
+  width: 30px;
+  height: 30px;
+  background-color: white;
+  border-radius: 4px;
+}
+
+.footer-content {
+  text-align: center;
+  flex: 1;
+}
+
+.footer-content p {
+  color: #ccc;
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+}
+
+.footer-links {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.footer-link {
+  color: #ccc;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.3s ease;
+}
+
+.footer-link:hover {
+  color: #ff6b35;
+}
+
+@media (max-width: 768px) {
+  .footer-container {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .footer-links {
+    justify-content: center;
+  }
+}

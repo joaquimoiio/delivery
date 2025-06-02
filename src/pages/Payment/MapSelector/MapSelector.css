@@ -1,0 +1,351 @@
+/* Overlay principal do modal */
+.map-selector-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+/* Modal principal */
+.map-selector-modal {
+  background-color: #2a2a2a;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border: 1px solid #555;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* Cabeçalho do modal */
+.map-selector-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid #555;
+  background-color: #3a3a3a;
+  border-radius: 12px 12px 0 0;
+}
+
+.map-selector-header h3 {
+  color: white;
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: #cccccc;
+  font-size: 2rem;
+  cursor: pointer;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+  background-color: #ff4444;
+  color: white;
+}
+
+/* Conteúdo do modal */
+.map-selector-content {
+  padding: 1.5rem;
+}
+
+.map-instructions {
+  color: #cccccc;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  background-color: #3a3a3a;
+  padding: 1rem;
+  border-radius: 8px;
+  border-left: 4px solid #4caf50;
+}
+
+.map-instructions strong {
+  color: #4caf50;
+}
+
+/* Container do mapa */
+.map-container {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid #555;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Seção de localização selecionada */
+.selected-location {
+  background-color: #3a3a3a;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #555;
+  border-left: 4px solid #4caf50;
+}
+
+.selected-location h4 {
+  color: white;
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.selected-location p {
+  color: #cccccc;
+  margin: 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+.selected-location strong {
+  color: white;
+  font-weight: 600;
+}
+
+/* Ações do modal */
+.map-selector-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  padding-top: 1rem;
+  border-top: 1px solid #555;
+}
+
+/* Botões */
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 120px;
+}
+
+.btn-primary {
+  background-color: #4caf50; 
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #45a049; 
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background-color: #ff4444; 
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #e63946;
+  transform: translateY(-1px);
+}
+
+/* Customização dos controles do Leaflet */
+.leaflet-container {
+  background-color: #1a1a1a !important;
+}
+
+.leaflet-control-geocoder {
+  background-color: #3a3a3a !important;
+  border: 1px solid #555 !important;
+  border-radius: 6px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+.leaflet-control-geocoder-form input {
+  background-color: #2a2a2a !important;
+  color: white !important;
+  border: 1px solid #555 !important;
+  border-radius: 4px !important;
+  padding: 10px 12px !important;
+  font-size: 14px !important;
+  width: 300px !important;
+}
+
+.leaflet-control-geocoder-form input::placeholder {
+  color: #888 !important;
+}
+
+.leaflet-control-geocoder-form input:focus {
+  border-color: #ff4444 !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.2) !important;
+}
+
+.leaflet-control-geocoder-alternatives {
+  background-color: #3a3a3a !important;
+  border: 1px solid #555 !important;
+  border-top: none !important;
+  border-radius: 0 0 6px 6px !important;
+  max-height: 200px !important;
+  overflow-y: auto !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+.leaflet-control-geocoder-alternative {
+  color: white !important;
+  border-bottom: 1px solid #555 !important;
+  padding: 10px 12px !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.leaflet-control-geocoder-alternative:hover {
+  background-color: #4a4a4a !important;
+}
+
+.leaflet-control-geocoder-alternative:last-child {
+  border-bottom: none !important;
+}
+
+.leaflet-control-geocoder-icon {
+  background-color: #ff4444 !important;
+  border-radius: 3px !important;
+}
+
+/* Customização dos controles de zoom */
+.leaflet-control-zoom {
+  border: 1px solid #555 !important;
+  border-radius: 6px !important;
+  overflow: hidden !important;
+}
+
+.leaflet-control-zoom a {
+  background-color: #3a3a3a !important;
+  color: white !important;
+  border-bottom: 1px solid #555 !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background-color: #4a4a4a !important;
+}
+
+.leaflet-control-zoom a:last-child {
+  border-bottom: none !important;
+}
+
+/* Customização da atribuição */
+.leaflet-control-attribution {
+  background-color: rgba(58, 58, 58, 0.9) !important;
+  color: #cccccc !important;
+  border-radius: 4px !important;
+  font-size: 11px !important;
+}
+
+.leaflet-control-attribution a {
+  color: #ff4444 !important;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .map-selector-overlay {
+    padding: 0.5rem;
+  }
+
+  .map-selector-modal {
+    max-height: 95vh;
+  }
+
+  .map-selector-header {
+    padding: 1rem;
+  }
+
+  .map-selector-header h3 {
+    font-size: 1.3rem;
+  }
+
+  .map-selector-content {
+    padding: 1rem;
+  }
+
+  .map-selector-actions {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+  }
+
+  .leaflet-control-geocoder-form input {
+    width: 250px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .map-selector-header {
+    padding: 0.75rem;
+  }
+
+  .map-selector-content {
+    padding: 0.75rem;
+  }
+
+  .selected-location {
+    padding: 1rem;
+  }
+
+  .leaflet-control-geocoder-form input {
+    width: 200px !important;
+    font-size: 13px !important;
+  }
+}
+
+/* Animações */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.map-selector-modal {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Scrollbar customizada */
+.map-selector-modal::-webkit-scrollbar {
+  width: 8px;
+}
+
+.map-selector-modal::-webkit-scrollbar-track {
+  background-color: #2a2a2a;
+  border-radius: 4px;
+}
+
+.map-selector-modal::-webkit-scrollbar-thumb {
+  background-color: #555;
+  border-radius: 4px;
+}
+
+.map-selector-modal::-webkit-scrollbar-thumb:hover {
+  background-color: #666;
+}
