@@ -5,7 +5,6 @@ import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
 import FormularioCliente from './components/FormularioCliente';
 import FormularioEmpresa from './components/FormularioEmpresa';
-import FormularioEntregador from './components/FormularioEntregador';
 import './CadastroUsuario.css';
 
 const CadastroUsuario = () => {
@@ -24,11 +23,6 @@ const CadastroUsuario = () => {
       titulo: 'Sou Empresa',
       descricao: 'Quero vender produtos'
     },
-    {
-      id: 'entregador',
-      titulo: 'Sou Entregador',
-      descricao: 'Quero fazer entregas'
-    }
   ];
 
   const handleTipoClick = (tipo) => {
@@ -47,8 +41,6 @@ const CadastroUsuario = () => {
         return <FormularioCliente onVoltar={handleVoltar} />;
       case 'empresa':
         return <FormularioEmpresa onVoltar={handleVoltar} />;
-      case 'entregador':
-        return <FormularioEntregador onVoltar={handleVoltar} />;
       default:
         return <FormularioCliente onVoltar={handleVoltar} />;
     }
