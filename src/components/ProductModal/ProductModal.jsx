@@ -22,7 +22,7 @@ const ProductModal = ({ product, isOpen, onClose, storeId }) => {
       quantity,
       observacao,
       storeId,
-      total: product.valor * quantity
+      total: (product.preco || product.valor) * quantity
     };
     
     localStorage.setItem('currentOrder', JSON.stringify(orderData));
@@ -48,7 +48,7 @@ const ProductModal = ({ product, isOpen, onClose, storeId }) => {
         <div className="modal-content">
           <div className="product-image-modal">
             <img 
-              src={product.imagem} 
+              src={product.imagemUrl || product.imagem || 'https://via.placeholder.com/300x200?text=Produto'} 
               alt={product.nome}
               onError={(e) => {
                 e.target.src = 'https://via.placeholder.com/300x200?text=Produto';
@@ -59,7 +59,7 @@ const ProductModal = ({ product, isOpen, onClose, storeId }) => {
           <div className="product-details-modal">
             <h3>{product.nome}</h3>
             <p className="product-description-modal">{product.descricao}</p>
-            <div className="product-price-modal">{formatPrice(product.valor)}</div>
+            <div className="product-price-modal">{formatPrice(product.preco || product.valor)}</div>
             
             <div className="quantity-section">
               <label>Quantidade:</label>
@@ -97,7 +97,7 @@ const ProductModal = ({ product, isOpen, onClose, storeId }) => {
             </div>
             
             <div className="total-section">
-              <strong>Total: {formatPrice(product.valor * quantity)}</strong>
+              <strong>Total: {formatPrice((product.preco || product.valor) * quantity)}</strong>
             </div>
             
             <button className="buy-now-btn" onClick={handleBuyNow}>

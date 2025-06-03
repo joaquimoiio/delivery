@@ -1,356 +1,143 @@
-// src/services/AuthService.js
-const API_BASE_URL = 'http://localhost:8082';
+// src/services/AuthService.js - VERSÃO ATUALIZADA COM BACKEND REFEITO
+import { api } from '../config/api';
+import API_CONFIG from '../config/api';
 
 class AuthService {
   
-  // Cabeçalhos padrão para requisições
-  getHeaders() {
-    return {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    };
-  }
-
-  // Cabeçalhos com token de autenticação
-  getAuthHeaders() {
-    const token = localStorage.getItem('authToken');
-    return {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      ...(token && { 'Authorization': `Bearer ${token}` })
-    };
-  }
-
-  // ==================== CLIENTE ====================
+  // ==================== MÉTODOS PRINCIPAIS ====================
   
+  // Login unificado
+  async login(email, senha, tipoUsuario) {
+    try {
+      console.log('Tentando login com:', { email, tipoUsuario });
+      
+      const requestData = {
+        email: email,
+        senha: senha,
+        tipoUsuario: tipoUsuario
+      };
+      
+      const response = await api.post(API_CONFIG.ENDPOINTS.AUTH.LOGIN, requestData);
+      
+      if (response && response.token) {
+        // Salvar token e dados do usuário
+        localStorage.setItem('authToken', response.token);
+        localStorage.setItem('userType', response.tipoUsuario || tipoUsuario);
+        
+        if (response.usuario) {
+          localStorage.setItem('userData', JSON.stringify(response.usuario));
+        }
+        
+        return {
+          success: true,
+          token: response.token,
+          userType: response.tipoUsuario || tipoUsuario,
+          usuario: response.usuario
+        };
+      }
+      
+      throw new Error('Resposta inválida do servidor');
+    } catch (error) {
+      console.error('Erro no login:', error);
+      return {
+        success: false,
+        message: error.message || 'Erro ao fazer login'
+      };
+    }
+  }
+
+  // Cadastro unificado
+  async cadastrar(userData, tipoUsuario) {
+    try {
+      console.log('Tentando cadastro com:', { tipoUsuario });
+      
+      // Converter tipo de usuário para o formato esperado pelo backend
+      const tipoUsuarioBackend = tipoUsuario === 'cliente' ? 'CLIENTE' : 'EMPRESA';
+      
+      const requestData = {
+        email: userData.email,
+        senha: userData.senha,
+        tipoUsuario: tipoUsuarioBackend
+      };
+      
+      // Ajustar campos baseado no tipo de usuário
+      if (tipoUsuario === 'cliente') {
+        requestData.nome = userData.nomeCompleto;
+        requestData.cpf = userData.cpf?.replace(/\D/g, '');
+        requestData.telefoneCliente = userData.telefone?.replace(/\D/g, '');
+        requestData.enderecoCliente = userData.endereco || '';
+      } else if (tipoUsuario === 'empresa' || tipoUsuario === 'fornecedor') {
+        requestData.nomeFantasia = userData.nomeLoja || userData.nomeEmpresa;
+        requestData.cnpj = userData.cnpj?.replace(/\D/g, '');
+        requestData.telefoneEmpresa = userData.telefone?.replace(/\D/g, '');
+        requestData.enderecoEmpresa = userData.endereco || '';
+        requestData.descricao = userData.descricao || '';
+        requestData.categoriaId = userData.categoriaId;
+      }
+      
+      const response = await api.post(API_CONFIG.ENDPOINTS.AUTH.REGISTER, requestData);
+      
+      if (response && response.token) {
+        // Salvar token e dados do usuário
+        localStorage.setItem('authToken', response.token);
+        localStorage.setItem('userType', response.tipoUsuario || tipoUsuario);
+        
+        if (response.usuario) {
+          localStorage.setItem('userData', JSON.stringify(response.usuario));
+        }
+        
+        return {
+          success: true,
+          token: response.token,
+          userType: response.tipoUsuario || tipoUsuario,
+          usuario: response.usuario
+        };
+      }
+      
+      throw new Error('Resposta inválida do servidor');
+    } catch (error) {
+      console.error('Erro no cadastro:', error);
+      return {
+        success: false,
+        message: error.message || 'Erro ao fazer cadastro'
+      };
+    }
+  }
+
+  // ==================== MÉTODOS DE COMPATIBILIDADE ====================
+  
+  // Login do cliente (mantido para compatibilidade)
   async loginCliente(loginData) {
-    try {
-      console.log('Tentando login do cliente com:', { email: loginData.email });
-      
-      const requestData = {
-        dsEmail: loginData.email,
-        dsSenha: loginData.senha
-      };
-      
-      console.log('Dados da requisição:', requestData);
-      
-      const response = await fetch(`${API_BASE_URL}/cliente/auth/login`, {
-        method: 'POST',
-        headers: this.getHeaders(),
-        body: JSON.stringify(requestData)
-      });
-
-      console.log('Status da resposta:', response.status);
-
-      if (!response.ok) {
-        let errorMessage = 'Erro ao fazer login';
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.message || errorMessage;
-          console.error('Erro da API:', errorData);
-        } catch (e) {
-          console.error('Erro ao parsear resposta de erro:', e);
-        }
-        throw new Error(errorMessage);
-      }
-
-      const data = await response.json();
-      console.log('Dados de resposta do login:', data);
-      
-      // Salvar token e dados do usuário
-      localStorage.setItem('authToken', data.token);
-      localStorage.setItem('userType', 'cliente');
-      
-      return {
-        success: true,
-        token: data.token,
-        userType: 'cliente'
-      };
-    } catch (error) {
-      console.error('Erro no login do cliente:', error);
-      return {
-        success: false,
-        message: error.message
-      };
-    }
+    return this.login(loginData.email, loginData.senha, 'cliente');
   }
 
-  async cadastrarCliente(clienteData) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/cliente/auth/register`, {
-        method: 'POST',
-        headers: this.getHeaders(),
-        body: JSON.stringify({
-          nmUsuario: clienteData.nomeCompleto,
-          dsEmail: clienteData.email,
-          dsSenha: clienteData.senha,
-          nuCpf: clienteData.cpf.replace(/\D/g, ''),
-          dsTelefone: clienteData.telefone ? clienteData.telefone.replace(/\D/g, '') : null,
-          dtNascimento: clienteData.dataNascimento || null,
-          nuLatitude: clienteData.latitude || null,
-          nuLongitude: clienteData.longitude || null
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Erro ao cadastrar cliente');
-      }
-
-      const data = await response.json();
-      
-      // Salvar token e dados do usuário
-      localStorage.setItem('authToken', data.token);
-      localStorage.setItem('userType', 'cliente');
-      
-      return {
-        success: true,
-        token: data.token,
-        userType: 'cliente'
-      };
-    } catch (error) {
-      console.error('Erro no cadastro do cliente:', error);
-      return {
-        success: false,
-        message: error.message
-      };
-    }
-  }
-
-  // ==================== FORNECEDOR ====================
-  
+  // Login do fornecedor (mantido para compatibilidade)
   async loginFornecedor(loginData) {
-    try {
-      console.log('Tentando login do fornecedor com:', { email: loginData.email });
-      
-      const requestData = {
-        dsEmail: loginData.email,
-        dsSenha: loginData.senha
-      };
-      
-      console.log('Dados da requisição:', requestData);
-      
-      const response = await fetch(`${API_BASE_URL}/fornecedor/auth/login`, {
-        method: 'POST',
-        headers: this.getHeaders(),
-        body: JSON.stringify(requestData)
-      });
-
-      console.log('Status da resposta:', response.status);
-
-      if (!response.ok) {
-        let errorMessage = 'Erro ao fazer login';
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.message || errorMessage;
-          console.error('Erro da API:', errorData);
-        } catch (e) {
-          console.error('Erro ao parsear resposta de erro:', e);
-        }
-        throw new Error(errorMessage);
-      }
-
-      const data = await response.json();
-      console.log('Dados de resposta do login:', data);
-      
-      // Salvar token e dados do usuário
-      localStorage.setItem('authToken', data.token);
-      localStorage.setItem('userType', 'fornecedor');
-      
-      return {
-        success: true,
-        token: data.token,
-        userType: 'fornecedor'
-      };
-    } catch (error) {
-      console.error('Erro no login do fornecedor:', error);
-      return {
-        success: false,
-        message: error.message
-      };
-    }
+    return this.login(loginData.email, loginData.senha, 'empresa');
   }
 
-  async cadastrarFornecedor(fornecedorData) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/fornecedor/auth/register`, {
-        method: 'POST',
-        headers: this.getHeaders(),
-        body: JSON.stringify({
-          nmUsuario: fornecedorData.nomeLoja,
-          dsEmail: fornecedorData.email,
-          dsSenha: fornecedorData.senha,
-          nuCnpj: fornecedorData.cnpj.replace(/\D/g, ''),
-          dsTelefone: fornecedorData.telefone ? fornecedorData.telefone.replace(/\D/g, '') : null,
-          nuLatitude: fornecedorData.latitude || null,
-          nuLongitude: fornecedorData.longitude || null,
-          dsAvatar: fornecedorData.avatar || null
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Erro ao cadastrar fornecedor');
-      }
-
-      const data = await response.json();
-      
-      // Salvar token e dados do usuário
-      localStorage.setItem('authToken', data.token);
-      localStorage.setItem('userType', 'fornecedor');
-      
-      return {
-        success: true,
-        token: data.token,
-        userType: 'fornecedor'
-      };
-    } catch (error) {
-      console.error('Erro no cadastro do fornecedor:', error);
-      return {
-        success: false,
-        message: error.message
-      };
-    }
-  }
-
-  // ==================== ENTREGADOR ====================
-  
+  // Login do entregador (mantido para compatibilidade)
   async loginEntregador(loginData) {
-    try {
-      console.log('Tentando login do entregador com:', { email: loginData.email });
-      
-      const requestData = {
-        dsEmail: loginData.email,
-        dsSenha: loginData.senha
-      };
-      
-      console.log('Dados da requisição:', requestData);
-      
-      const response = await fetch(`${API_BASE_URL}/entregador/auth/login`, {
-        method: 'POST',
-        headers: this.getHeaders(),
-        body: JSON.stringify(requestData)
-      });
-
-      console.log('Status da resposta:', response.status);
-
-      if (!response.ok) {
-        let errorMessage = 'Erro ao fazer login';
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.message || errorMessage;
-          console.error('Erro da API:', errorData);
-        } catch (e) {
-          console.error('Erro ao parsear resposta de erro:', e);
-        }
-        throw new Error(errorMessage);
-      }
-
-      const data = await response.json();
-      console.log('Dados de resposta do login:', data);
-      
-      // Salvar token e dados do usuário
-      localStorage.setItem('authToken', data.token);
-      localStorage.setItem('userType', 'entregador');
-      
-      return {
-        success: true,
-        token: data.token,
-        userType: 'entregador'
-      };
-    } catch (error) {
-      console.error('Erro no login do entregador:', error);
-      return {
-        success: false,
-        message: error.message
-      };
-    }
+    return this.login(loginData.email, loginData.senha, 'entregador');
   }
 
+  // Cadastro do cliente (mantido para compatibilidade)
+  async cadastrarCliente(clienteData) {
+    return this.cadastrar(clienteData, 'cliente');
+  }
+
+  // Cadastro do fornecedor (mantido para compatibilidade)
+  async cadastrarFornecedor(fornecedorData) {
+    return this.cadastrar(fornecedorData, 'empresa');
+  }
+
+  // Cadastro do entregador (mantido para compatibilidade)
   async cadastrarEntregador(entregadorData) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/entregador/auth/register`, {
-        method: 'POST',
-        headers: this.getHeaders(),
-        body: JSON.stringify({
-          nmUsuario: entregadorData.nomeCompleto,
-          dsEmail: entregadorData.email,
-          dsSenha: entregadorData.senha,
-          nuCpf: entregadorData.cpf.replace(/\D/g, ''),
-          dsTelefone: entregadorData.telefone ? entregadorData.telefone.replace(/\D/g, '') : null,
-          dtNascimento: entregadorData.dataNascimento || null,
-          nuLatitude: entregadorData.latitude || null,
-          nuLongitude: entregadorData.longitude || null,
-          dsNumeroCnh: entregadorData.cnh,
-          dsPlacaVeiculo: entregadorData.placa
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Erro ao cadastrar entregador');
-      }
-
-      const data = await response.json();
-      
-      // Salvar token e dados do usuário
-      localStorage.setItem('authToken', data.token);
-      localStorage.setItem('userType', 'entregador');
-      
-      return {
-        success: true,
-        token: data.token,
-        userType: 'entregador'
-      };
-    } catch (error) {
-      console.error('Erro no cadastro do entregador:', error);
-      return {
-        success: false,
-        message: error.message
-      };
-    }
+    return this.cadastrar(entregadorData, 'entregador');
   }
 
   // ==================== MÉTODOS GERAIS ====================
   
-  // Login unificado baseado no tipo de usuário
-  async login(email, senha, tipoUsuario) {
-    const loginData = { email, senha };
-    
-    switch (tipoUsuario) {
-      case 'cliente':
-        return await this.loginCliente(loginData);
-      case 'empresa':
-      case 'fornecedor':
-        return await this.loginFornecedor(loginData);
-      case 'entregador':
-        return await this.loginEntregador(loginData);
-      default:
-        return {
-          success: false,
-          message: 'Tipo de usuário inválido'
-        };
-    }
-  }
-
-  // Cadastro unificado baseado no tipo de usuário
-  async cadastrar(userData, tipoUsuario) {
-    switch (tipoUsuario) {
-      case 'cliente':
-        return await this.cadastrarCliente(userData);
-      case 'empresa':
-      case 'fornecedor':
-        return await this.cadastrarFornecedor(userData);
-      case 'entregador':
-        return await this.cadastrarEntregador(userData);
-      default:
-        return {
-          success: false,
-          message: 'Tipo de usuário inválido'
-        };
-    }
-  }
-
   // Logout
   logout() {
     localStorage.removeItem('authToken');
@@ -373,58 +160,59 @@ class AuthService {
     return localStorage.getItem('authToken');
   }
 
+  // Obter dados do usuário
+  getUserData() {
+    const userData = localStorage.getItem('userData');
+    return userData ? JSON.parse(userData) : null;
+  }
+
   // Validar token (verificar se ainda é válido)
   async validateToken() {
     const token = this.getToken();
     if (!token) return false;
 
     try {
-      // Fazer uma requisição simples para verificar se o token é válido
-      const response = await fetch(`${API_BASE_URL}/busca/categorias`, {
-        method: 'GET',
-        headers: this.getAuthHeaders()
-      });
-
-      return response.ok;
+      // Usar endpoint de categorias para validar token
+      await api.get(API_CONFIG.ENDPOINTS.PUBLICO.CATEGORIAS);
+      return true;
     } catch (error) {
       console.error('Erro ao validar token:', error);
+      // Se o token for inválido, fazer logout
+      if (error.message?.includes('401') || error.message?.includes('403')) {
+        this.logout();
+      }
       return false;
     }
   }
 
   // Obter dados do perfil do usuário logado
   async getProfile() {
-    const token = this.getToken();
     const userType = this.getUserType();
     
-    if (!token || !userType) {
+    if (!userType) {
       return null;
     }
 
     try {
-      // Endpoint baseado no tipo de usuário
       let endpoint;
       switch (userType) {
         case 'cliente':
-          endpoint = '/clientes/perfil';
+          endpoint = API_CONFIG.ENDPOINTS.CLIENTE.PERFIL;
           break;
+        case 'empresa':
         case 'fornecedor':
-          endpoint = '/fornecedores/perfil';
-          break;
-        case 'entregador':
-          endpoint = '/entregadores/perfil';
+          endpoint = API_CONFIG.ENDPOINTS.EMPRESA.PERFIL;
           break;
         default:
           return null;
       }
 
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        method: 'GET',
-        headers: this.getAuthHeaders()
-      });
-
-      if (response.ok) {
-        return await response.json();
+      const response = await api.get(endpoint);
+      
+      if (response) {
+        // Atualizar dados locais
+        localStorage.setItem('userData', JSON.stringify(response));
+        return response;
       }
       
       return null;
@@ -449,13 +237,11 @@ class AuthService {
       let endpoint;
       switch (userType) {
         case 'cliente':
-          endpoint = '/clientes/perfil';
+          endpoint = API_CONFIG.ENDPOINTS.CLIENTE.PERFIL;
           break;
+        case 'empresa':
         case 'fornecedor':
-          endpoint = '/fornecedores/perfil';
-          break;
-        case 'entregador':
-          endpoint = '/entregadores/perfil';
+          endpoint = API_CONFIG.ENDPOINTS.EMPRESA.PERFIL;
           break;
         default:
           return {
@@ -464,32 +250,46 @@ class AuthService {
           };
       }
 
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        method: 'PUT',
-        headers: this.getAuthHeaders(),
-        body: JSON.stringify(profileData)
-      });
+      const response = await api.put(endpoint, profileData);
 
-      if (response.ok) {
-        const updatedData = await response.json();
+      if (response) {
+        // Atualizar dados locais
+        localStorage.setItem('userData', JSON.stringify(response));
         return {
           success: true,
-          data: updatedData
-        };
-      } else {
-        const errorData = await response.json();
-        return {
-          success: false,
-          message: errorData.message || 'Erro ao atualizar perfil'
+          data: response
         };
       }
+
+      return {
+        success: false,
+        message: 'Erro ao atualizar perfil'
+      };
     } catch (error) {
       console.error('Erro ao atualizar perfil:', error);
       return {
         success: false,
-        message: error.message
+        message: error.message || 'Erro ao atualizar perfil'
       };
     }
+  }
+
+  // Cabeçalhos padrão para requisições (mantido para compatibilidade)
+  getHeaders() {
+    return {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    };
+  }
+
+  // Cabeçalhos com token de autenticação (mantido para compatibilidade)
+  getAuthHeaders() {
+    const token = localStorage.getItem('authToken');
+    return {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    };
   }
 }
 

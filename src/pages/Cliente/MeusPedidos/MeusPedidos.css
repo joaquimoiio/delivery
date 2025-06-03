@@ -1,0 +1,361 @@
+.meus-pedidos {
+  padding: 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.pedidos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.pedidos-header h2 {
+  margin: 0;
+  color: #ffffff;
+}
+
+.refresh-btn {
+  padding: 8px 15px;
+  background-color: #3A3C3F;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.refresh-btn:hover {
+  background-color: #4A4C4F;
+}
+
+/* Loading, Error e Empty States */
+.loading,
+.error,
+.empty-pedidos {
+  text-align: center;
+  padding: 40px;
+  color: #ffffff;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #2A2C2F;
+  border-top: 4px solid #dc3545;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.retry-btn {
+  margin-top: 10px;
+  padding: 8px 15px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.retry-btn:hover {
+  background-color: #c82333;
+}
+
+/* Filtros */
+.filtros {
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.filtros label {
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.filtro-select {
+  padding: 8px 12px;
+  border: 1px solid #3A3C3F;
+  border-radius: 4px;
+  background: #2A2C2F;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.filtro-select:focus {
+  outline: none;
+  border-color: #dc3545;
+}
+
+/* Lista de Pedidos */
+.pedidos-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.pedido-card {
+  background: #2A2C2F;
+  border: 1px solid #3A3C3F;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.pedido-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  background: #3A3C3F;
+}
+
+.pedido-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #3A3C3F;
+}
+
+.pedido-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.pedido-id {
+  font-weight: bold;
+  color: #dc3545;
+  font-size: 1.1rem;
+}
+
+.pedido-empresa {
+  color: #ffffff;
+  font-size: 14px;
+}
+
+.pedido-valor {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #dc3545;
+}
+
+.pedido-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.pedido-data {
+  font-size: 14px;
+  color: #ffffff;
+}
+
+.pedido-status {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.pedido-status.entregue {
+  background-color: #dc3545;
+  color: white;
+}
+
+.pedido-status.pendente {
+  background-color: #3A3C3F;
+  color: #ffffff;
+}
+
+.pedido-status.cancelado {
+  background-color: #dc3545;
+  color: white;
+}
+
+.pedido-status.a-caminho {
+  background-color: #3A3C3F;
+  color: #ffffff;
+}
+
+/* Itens do Pedido */
+.pedido-itens {
+  margin-bottom: 15px;
+  padding: 15px;
+  background: #3A3C3F;
+  border-radius: 4px;
+}
+
+.pedido-itens h4 {
+  margin: 0 0 10px 0;
+  color: #ffffff;
+  font-size: 14px;
+}
+
+.pedido-itens ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.pedido-itens li {
+  padding: 5px 0;
+  border-bottom: 1px solid #2A2C2F;
+  font-size: 14px;
+  color: #ffffff;
+}
+
+.pedido-itens li:last-child {
+  border-bottom: none;
+}
+
+/* Endereço */
+.pedido-endereco {
+  margin-bottom: 15px;
+  padding: 15px;
+  background: #3A3C3F;
+  border-radius: 4px;
+}
+
+.pedido-endereco strong {
+  color: #ffffff;
+  font-size: 14px;
+}
+
+.pedido-endereco p {
+  margin: 8px 0 0 0;
+  font-size: 14px;
+  color: #ffffff;
+  line-height: 1.4;
+}
+
+/* Observações */
+.pedido-observacoes {
+  margin-bottom: 15px;
+  padding: 15px;
+  background: #3A3C3F;
+  border: 1px solid #dc3545;
+  border-radius: 4px;
+}
+
+.pedido-observacoes strong {
+  color: #ffffff;
+  font-size: 14px;
+}
+
+.pedido-observacoes p {
+  margin: 8px 0 0 0;
+  font-size: 14px;
+  color: #ffffff;
+  font-style: italic;
+}
+
+/* Ações */
+.pedido-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.avaliar-btn {
+  padding: 10px 15px;
+  background-color: #3A3C3F;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.3s;
+}
+
+.avaliar-btn:hover {
+  background-color: #4A4C4F;
+}
+
+.cancelar-btn {
+  padding: 10px 15px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.3s;
+}
+
+.cancelar-btn:hover {
+  background-color: #c82333;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .meus-pedidos {
+    padding: 10px;
+  }
+  
+  .pedidos-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: stretch;
+  }
+  
+  .pedido-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .pedido-details {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .pedido-actions {
+    flex-direction: column;
+  }
+  
+  .avaliar-btn,
+  .cancelar-btn {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .filtros {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .filtro-select {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .pedido-card {
+    padding: 15px;
+  }
+  
+  .pedido-valor {
+    font-size: 1.1rem;
+  }
+  
+  .pedido-id {
+    font-size: 1rem;
+  }
+}

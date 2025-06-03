@@ -4,6 +4,7 @@ import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
 import ProductModal from '../../components/ProductModal/ProductModal';
 import { useAuth } from '../../context/AuthContext';
+import EmpresaService from '../../services/EmpresaService';
 import './Store.css';
 
 const Store = () => {
@@ -27,127 +28,19 @@ const Store = () => {
 
   const loadStoreData = async (id) => {
     setIsLoading(true);
-    
-    // Simular delay de carregamento
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Dados da loja baseados no ID
-    const storeData = {
-      1: {
-        id: 1,
-        nome: 'Açaí do João',
-        descricao: 'Os melhores açaís da região com frutas frescas',
-        imagem: 'https://via.placeholder.com/800x300/8e24aa/ffffff?text=Açaí+do+João',
-        avaliacao: 4.8,
-        tempoEntrega: 25,
-        taxaEntrega: 3.99,
-        endereco: 'Rua das Flores, 123 - Centro',
-        categoria: 'acai'
-      },
-      2: {
-        id: 2,
-        nome: 'Açaí Premium',
-        descricao: 'Açaí artesanal com ingredientes selecionados',
-        imagem: 'https://via.placeholder.com/800x300/8e24aa/ffffff?text=Açaí+Premium',
-        avaliacao: 4.9,
-        tempoEntrega: 30,
-        taxaEntrega: 0,
-        endereco: 'Av. Principal, 456 - Centro',
-        categoria: 'acai'
-      },
-      5: {
-        id: 5,
-        nome: 'Burger House',
-        descricao: 'Hambúrgueres artesanais com ingredientes frescos',
-        imagem: 'https://via.placeholder.com/800x300/ff8c00/ffffff?text=Burger+House',
-        avaliacao: 4.9,
-        tempoEntrega: 35,
-        taxaEntrega: 5.99,
-        endereco: 'Rua dos Sabores, 789 - Centro',
-        categoria: 'hamburgueria'
-      }
-    };
-
-    // Produtos baseados na loja
-    const productsData = {
-      1: [ // Açaí do João
-        {
-          id: 1,
-          nome: 'Açaí 300ml',
-          descricao: 'Açaí cremoso tradicional com granola crocante',
-          valor: 12.90,
-          imagem: 'https://via.placeholder.com/300x200/8e24aa/ffffff?text=Açaí+300ml',
-          categoria: 'acai'
-        },
-        {
-          id: 2,
-          nome: 'Açaí 500ml',
-          descricao: 'Açaí cremoso com granola, banana e mel',
-          valor: 18.90,
-          imagem: 'https://via.placeholder.com/300x200/8e24aa/ffffff?text=Açaí+500ml',
-          categoria: 'acai'
-        },
-        {
-          id: 3,
-          nome: 'Açaí 700ml',
-          descricao: 'Açaí cremoso com frutas variadas e complementos',
-          valor: 24.90,
-          imagem: 'https://via.placeholder.com/300x200/8e24aa/ffffff?text=Açaí+700ml',
-          categoria: 'acai'
-        },
-        {
-          id: 4,
-          nome: 'Açaí Premium 500ml',
-          descricao: 'Açaí especial com frutas premium e castanhas',
-          valor: 28.90,
-          imagem: 'https://via.placeholder.com/300x200/8e24aa/ffffff?text=Açaí+Premium',
-          categoria: 'acai'
-        }
-      ],
-      2: [ // Açaí Premium
-        {
-          id: 5,
-          nome: 'Açaí Gourmet 400ml',
-          descricao: 'Açaí premium com frutas orgânicas',
-          valor: 22.90,
-          imagem: 'https://via.placeholder.com/300x200/8e24aa/ffffff?text=Açaí+Gourmet',
-          categoria: 'acai'
-        },
-        {
-          id: 6,
-          nome: 'Açaí Especial 600ml',
-          descricao: 'Açaí com ingredientes especiais e superfoods',
-          valor: 32.90,
-          imagem: 'https://via.placeholder.com/300x200/8e24aa/ffffff?text=Açaí+Especial',
-          categoria: 'acai'
-        }
-      ],
-      5: [ // Burger House
-        {
-          id: 7,
-          nome: 'X-Burger Clássico',
-          descricao: 'Hambúrguer artesanal com queijo, alface e tomate',
-          valor: 25.90,
-          imagem: 'https://via.placeholder.com/300x200/ff8c00/ffffff?text=X-Burger',
-          categoria: 'hamburgueria'
-        },
-        {
-          id: 8,
-          nome: 'X-Bacon Duplo',
-          descricao: 'Dois hambúrgueres, bacon crocante e queijo',
-          valor: 32.90,
-          imagem: 'https://via.placeholder.com/300x200/ff8c00/ffffff?text=X-Bacon',
-          categoria: 'hamburgueria'
-        }
-      ]
-    };
-
-    const currentStore = storeData[id];
-    const currentProducts = productsData[id] || [];
-
-    setStore(currentStore);
-    setProducts(currentProducts);
-    setIsLoading(false);
+    try {
+      const storeData = await EmpresaService.buscarEmpresaPorId(id);
+      const productsData = await EmpresaService.buscarProdutosEmpresa(id);
+      
+      setStore(storeData);
+      setProducts(productsData || []);
+    } catch (error) {
+      console.error('Erro ao carregar dados da loja:', error);
+      setStore(null);
+      setProducts([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleBuyClick = (product) => {
@@ -207,8 +100,12 @@ const Store = () => {
               <p>{store.descricao}</p>
               <div className="store-details-banner">
                 <span className="store-rating">⭐ {store.avaliacao}</span>
-                <span className="store-time">🕐 {store.tempoEntrega} min</span>
-                <span className="store-fee">🚚 {formatPrice(store.taxaEntrega)}</span>
+                {store.tempoEntrega ? (
+                  <span className="store-time">🕐 {store.tempoEntrega} min</span>
+                ) : null}
+                {store.taxaEntrega !== null && store.taxaEntrega !== undefined && !isNaN(store.taxaEntrega) ? (
+                  <span className="store-fee">🚚 {formatPrice(store.taxaEntrega)}</span>
+                ) : null}
               </div>
               <div className="store-address">
                 📍 {store.endereco}
@@ -222,40 +119,40 @@ const Store = () => {
           <div className="products-container">
             <h2>Cardápio</h2>
             
-            {products.length > 0 ? (
-              <div className="products-grid">
-                {products.map(product => (
-                  <div key={product.id} className="product-card">
-                    <div className="product-image">
-                      <img 
-                        src={product.imagem} 
-                        alt={product.nome}
-                        onError={(e) => {
-                          e.target.src = 'https://via.placeholder.com/300x200?text=Produto';
-                        }}
-                      />
-                    </div>
-                    
-                    <div className="product-info">
-                      <h3 className="product-name">{product.nome}</h3>
-                      <p className="product-description">{product.descricao}</p>
-                      <div className="product-price">{formatPrice(product.valor)}</div>
-                      
-                      <button 
-                        className="buy-now-btn"
-                        onClick={() => handleBuyClick(product)}
-                      >
-                        Comprar Agora
-                      </button>
-                    </div>
+                {products.length > 0 ? (
+                  <div className="products-grid">
+                    {products.map(product => (
+                      <div key={product.id} className="product-card">
+                        <div className="product-image">
+                          <img 
+                            src={product.imagemUrl || product.imagem || 'https://via.placeholder.com/300x200?text=Produto'} 
+                            alt={product.nome}
+                            onError={(e) => {
+                              e.target.src = 'https://via.placeholder.com/300x200?text=Produto';
+                            }}
+                          />
+                        </div>
+                        
+                        <div className="product-info">
+                          <h3 className="product-name">{product.nome}</h3>
+                          <p className="product-description">{product.descricao}</p>
+                          <div className="product-price">{formatPrice(product.preco || product.valor)}</div>
+                          
+                          <button 
+                            className="buy-now-btn"
+                            onClick={() => handleBuyClick(product)}
+                          >
+                            Comprar Agora
+                          </button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="no-products">
-                <p>Nenhum produto disponível no momento.</p>
-              </div>
-            )}
+                ) : (
+                  <div className="no-products">
+                    <p>Nenhum produto disponível no momento.</p>
+                  </div>
+                )}
           </div>
         </div>
       </div>

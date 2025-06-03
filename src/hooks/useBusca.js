@@ -1,4 +1,3 @@
-// src/hooks/useBusca.js - Versão corrigida e simplificada
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import buscaService from '../services/BuscaService';
 import { getUserLocation, getDefaultLocation } from '../utils/locationUtils';
@@ -31,60 +30,68 @@ export const useBusca = () => {
   });
 
   // Executar busca
-  const executarBusca = useCallback(async (page = 0, resetResults = true) => {
-    // Não executar busca se não houver coordenadas mínimas
-    if (!filtros.latitude || !filtros.longitude) {
-      console.log('Aguardando coordenadas para executar busca...');
-      return;
-    }
-
+  const executarBusca = useCallback(async (page = 0, resetResults = true, buscarProdutos = false) => {
     setLoading(true);
     setError(null);
 
     try {
       let resultado;
+      const opcoes = {
+        page,
+        size: 20,
+        latitude: filtros.latitude,
+        longitude: filtros.longitude,
+        raioKm: filtros.raioMaximoKm
+      };
 
-      if (filtros.categoria) {
-        // Busca por categoria
-        const categoriaBackend = buscaService.converterCategoriaParaBackend(filtros.categoria);
-        resultado = await buscaService.buscarPorCategoria(categoriaBackend, {
-          latitude: filtros.latitude,
-          longitude: filtros.longitude,
-          raioKm: filtros.raioMaximoKm,
-          page,
-          size: 20
-        });
-      } else if (filtros.termo) {
-        // Busca por termo
-        resultado = await buscaService.buscarGeral(filtros.termo, {
-          latitude: filtros.latitude,
-          longitude: filtros.longitude,
-          raioKm: filtros.raioMaximoKm,
-          page,
-          size: 20
-        });
+      if (buscarProdutos) {
+        if (filtros.categoria) {
+          // Buscar produtos por categoria usando o novo endpoint
+          resultado = await buscaService.buscarProdutosPorCategoria(
+            filtros.categoria,
+            opcoes
+          );
+        } else if (filtros.termo) {
+          // Buscar produtos por termo
+          resultado = await buscaService.buscarProdutos(
+            filtros.termo,
+            {
+              ...opcoes,
+              categoriaId: filtros.categoria
+            }
+          );
+        } else {
+          // Listar todos os produtos
+          resultado = await buscaService.listarProdutos(opcoes);
+        }
       } else {
-        // Busca por filtros avançados ou próximos
-        const filtrosBackend = {
-          ...filtros,
-          categorias: filtros.categoria ? [buscaService.converterCategoriaParaBackend(filtros.categoria)] : null
-        };
-
-        resultado = await buscaService.buscarComFiltros(filtrosBackend, {
-          page,
-          size: 20
-        });
+        // Busca por lojas/empresas
+        if (filtros.categoria) {
+          resultado = await buscaService.buscarPorCategoria(filtros.categoria, opcoes);
+        } else if (filtros.termo) {
+          resultado = await buscaService.buscarGeral(filtros.termo, {
+            ...opcoes,
+            categoriaId: filtros.categoria
+          });
+        } else if (filtros.latitude && filtros.longitude) {
+          resultado = await buscaService.buscarProximos(
+            filtros.latitude,
+            filtros.longitude,
+            opcoes
+          );
+        }
       }
 
+      // Atualizar resultados
       if (resetResults || page === 0) {
-        setResultados(resultado.content || []);
+        setResultados(resultado?.content || resultado || []);
       } else {
-        // Adicionar à lista existente (para scroll infinito)
-        setResultados(prev => [...prev, ...(resultado.content || [])]);
+        setResultados(prev => [...prev, ...(resultado?.content || resultado || [])]);
       }
 
-      setTotalElements(resultado.totalElements || 0);
-      setTotalPages(resultado.totalPages || 0);
+      // Atualizar metadados da paginação
+      setTotalElements(resultado?.totalElements || resultado?.length || 0);
+      setTotalPages(resultado?.totalPages || 1);
       setCurrentPage(page);
 
     } catch (err) {
@@ -95,39 +102,6 @@ export const useBusca = () => {
     }
   }, [filtros]);
 
-  // Buscar próximos (sem filtros)
-  const buscarProximos = useCallback(async () => {
-    if (!filtros.latitude || !filtros.longitude) {
-      console.log('Coordenadas necessárias para buscar próximos');
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const resultado = await buscaService.buscarProximos(
-        filtros.latitude,
-        filtros.longitude,
-        {
-          raioKm: filtros.raioMaximoKm,
-          limite: 20
-        }
-      );
-
-      setResultados(resultado);
-      setTotalElements(resultado.length);
-      setTotalPages(1);
-      setCurrentPage(0);
-
-    } catch (err) {
-      setError(err.message);
-      console.error('Erro ao buscar próximos:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [filtros.latitude, filtros.longitude, filtros.raioMaximoKm]);
-
   // Atualizar filtro específico
   const atualizarFiltro = useCallback((campo, valor) => {
     setFiltros(prev => ({
@@ -136,14 +110,12 @@ export const useBusca = () => {
     }));
   }, []);
 
-  // Limpar filtros
+  // Limpar filtros mantendo localização
   const limparFiltros = useCallback(() => {
     setFiltros(prev => ({
+      ...prev,
       termo: '',
       categoria: '',
-      latitude: prev.latitude, // Manter coordenadas
-      longitude: prev.longitude,
-      raioMaximoKm: 10,
       precoMinimo: null,
       precoMaximo: null,
       avaliacaoMinima: null,
@@ -160,7 +132,7 @@ export const useBusca = () => {
   // Carregar mais resultados (scroll infinito)
   const carregarMais = useCallback(() => {
     if (currentPage < totalPages - 1 && !loading) {
-      executarBusca(currentPage + 1, false);
+      executarBusca(currentPage + 1, false, true);
     }
   }, [currentPage, totalPages, loading, executarBusca]);
 
@@ -169,19 +141,18 @@ export const useBusca = () => {
     return currentPage < totalPages - 1;
   }, [currentPage, totalPages]);
 
-  // Executar busca automaticamente quando filtros mudarem
+  // Executar busca automaticamente quando filtros relevantes mudarem
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      if (filtros.latitude && filtros.longitude) {
-        executarBusca(0, true);
+      if (filtros.categoria || filtros.termo) {
+        executarBusca(0, true, true); // buscarProdutos = true
       }
     }, 500); // Debounce de 500ms
 
     return () => clearTimeout(timeoutId);
-  }, [filtros.termo, filtros.categoria, filtros.latitude, filtros.longitude, filtros.raioMaximoKm]);
+  }, [filtros.termo, filtros.categoria, filtros.latitude, filtros.longitude, filtros.raioMaximoKm, executarBusca]);
 
   return {
-    // Estado
     resultados,
     loading,
     error,
@@ -190,10 +161,7 @@ export const useBusca = () => {
     currentPage,
     filtros,
     temMaisPaginas,
-
-    // Ações
     executarBusca,
-    buscarProximos,
     atualizarFiltro,
     limparFiltros,
     carregarMais,
@@ -201,46 +169,14 @@ export const useBusca = () => {
   };
 };
 
-// Hook para sugestões de autocomplete
-export const useSugestoes = (termo) => {
-  const [sugestoes, setSugestoes] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (!termo || termo.length < 2) {
-      setSugestoes([]);
-      return;
-    }
-
-    const timeoutId = setTimeout(async () => {
-      setLoading(true);
-      
-      try {
-        const resultado = await buscaService.obterSugestoes(termo, 8);
-        setSugestoes(resultado);
-      } catch (error) {
-        console.error('Erro ao obter sugestões:', error);
-        setSugestoes([]);
-      } finally {
-        setLoading(false);
-      }
-    }, 300); // Debounce de 300ms
-
-    return () => clearTimeout(timeoutId);
-  }, [termo]);
-
-  return { sugestoes, loading };
-};
-
-// Hook para obter localização do usuário - VERSÃO SIMPLIFICADA
+// Hook para obter localização do usuário
 export const useLocalizacao = () => {
-  // Estado inicial com valores padrão seguros
   const [localizacao, setLocalizacao] = useState({
     latitude: null,
     longitude: null,
     erro: null,
     loading: false,
-    origem: null // 'gps' | 'fallback'
+    origem: null
   });
 
   const obterLocalizacao = useCallback(() => {
@@ -282,4 +218,35 @@ export const useLocalizacao = () => {
     obterLocalizacao,
     usarLocalizacaoFallback
   };
+};
+
+// Hook para sugestões de autocomplete
+export const useSugestoes = (termo) => {
+  const [sugestoes, setSugestoes] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!termo || termo.length < 2) {
+      setSugestoes([]);
+      return;
+    }
+
+    const timeoutId = setTimeout(async () => {
+      setLoading(true);
+      
+      try {
+        const resultado = await buscaService.obterSugestoes(termo, 8);
+        setSugestoes(resultado);
+      } catch (error) {
+        console.error('Erro ao obter sugestões:', error);
+        setSugestoes([]);
+      } finally {
+        setLoading(false);
+      }
+    }, 300); // Debounce de 300ms
+
+    return () => clearTimeout(timeoutId);
+  }, [termo]);
+
+  return { sugestoes, loading };
 };

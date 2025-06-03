@@ -1,28 +1,37 @@
-// src/config/api.js - VERSÃO CORRIGIDA COM ENDPOINTS DO BACKEND
+// src/config/api.js - VERSÃO ATUALIZADA COM ENDPOINTS DO BACKEND REFEITO
 const API_CONFIG = {
     BASE_URL: process.env.REACT_APP_API_URL || 'http://localhost:8080',
     ENDPOINTS: {
       // Autenticação
       AUTH: {
         LOGIN: '/api/auth/login',
-        REGISTER: '/api/auth/register',
-        ME: '/api/auth/user/me',
-        VALIDATE: '/api/auth/user/validate-token'
+        REGISTER: '/api/auth/register'
       },
       
       // Busca Pública
       BUSCA: {
-        GERAL: '/api/publico/busca/empresas/termo',
-        CATEGORIA: '/api/publico/busca/empresas/categoria',
-        PROXIMOS: '/api/publico/busca/empresas/proximas',
-        SUGESTOES: '/api/publico/busca/empresas/termo',
-        CATEGORIAS: '/api/publico/categorias'
+        EMPRESAS: '/api/publico/busca/empresas',
+        EMPRESAS_TERMO: '/api/publico/busca/empresas/termo',
+        EMPRESAS_CATEGORIA: '/api/publico/busca/empresas/categoria',
+        EMPRESAS_PROXIMAS: '/api/publico/busca/empresas/proximas',
+        EMPRESA_DETALHES: '/api/publico/busca/empresas',
+        EMPRESA_PRODUTOS: '/api/publico/busca/empresas/{empresaId}/produtos',
+        PRODUTOS: '/api/publico/busca/produtos',
+        PRODUTOS_TERMO: '/api/publico/busca/produtos/termo',
+        PRODUTOS_CATEGORIA: '/api/publico/busca/produtos/categoria'
       },
       
       // Cliente
       CLIENTE: {
         PERFIL: '/api/cliente/perfil',
         PEDIDOS: '/api/cliente/pedidos',
+        PEDIDO_POR_ID: '/api/cliente/pedidos/{id}',
+        PEDIDOS_POR_STATUS: '/api/cliente/pedidos/status/{status}',
+        CANCELAR_PEDIDO: '/api/cliente/pedidos/{id}/cancelar',
+        ESTATISTICAS_PEDIDOS: '/api/cliente/pedidos/estatisticas',
+        RASTREAR_PEDIDO: '/api/cliente/pedidos/{id}/rastrear',
+        PAGAR_PEDIDO: '/api/cliente/pedidos/{id}/pagar',
+        FEEDBACKS: '/api/cliente/feedbacks',
         FEEDBACK: '/api/cliente/feedbacks'
       },
       
@@ -30,16 +39,30 @@ const API_CONFIG = {
       EMPRESA: {
         PERFIL: '/api/empresa/perfil',
         PRODUTOS: '/api/empresa/produtos',
+        PRODUTOS_PAGINADO: '/api/empresa/produtos/paginado',
+        PRODUTO_POR_ID: '/api/empresa/produtos/{id}',
+        PRODUTO_ATIVAR: '/api/empresa/produtos/{id}/ativar',
+        PRODUTO_DESATIVAR: '/api/empresa/produtos/{id}/desativar',
+        PRODUTOS_ESTATISTICAS: '/api/empresa/produtos/estatisticas',
         PEDIDOS: '/api/empresa/pedidos',
-        RELATORIO: '/api/empresa/relatorios',
+        PEDIDO_STATUS: '/api/empresa/pedidos/{id}/status',
+        PEDIDO_ENTREGAR: '/api/empresa/pedidos/{id}/entregar',
+        RELATORIO: '/api/empresa/relatorio',
+        RELATORIOS: '/api/empresa/relatorios',
         FEEDBACKS: '/api/empresa/feedbacks'
       },
       
-      // Público
+      // Público - Categorias
       PUBLICO: {
-        EMPRESAS: '/api/publico/busca/empresas',
-        PRODUTOS: '/api/publico/busca/produtos',
-        CATEGORIAS: '/api/publico/categorias'
+        CATEGORIAS: '/api/publico/categorias',
+        CATEGORIA_POR_ID: '/api/publico/categorias/{id}',
+        CATEGORIA_POR_SLUG: '/api/publico/categorias/slug/{slug}',
+        CATEGORIA_EMPRESAS: '/api/publico/categorias/{id}/empresas',
+        CATEGORIA_PRODUTOS: '/api/publico/categorias/{id}/produtos',
+        CATEGORIA_ESTATISTICAS: '/api/publico/categorias/{id}/estatisticas',
+        CATEGORIAS_POPULARES: '/api/publico/categorias/populares',
+        CATEGORIAS_COM_EMPRESAS: '/api/publico/categorias/com-empresas',
+        CATEGORIAS_BUSCAR: '/api/publico/categorias/buscar'
       }
     },
     
@@ -70,38 +93,72 @@ const API_CONFIG = {
   // Utilitário para fazer requisições com tratamento de erro
   export const apiRequest = async (endpoint, options = {}) => {
     const url = buildUrl(endpoint);
+    const token = localStorage.getItem('authToken');
+    
+    if (!token && !endpoint.includes('/api/auth/') && !endpoint.includes('/api/publico/')) {
+      throw new Error('Usuário não está autenticado. Faça login novamente.');
+    }
+
     const config = {
       timeout: API_CONFIG.TIMEOUT,
       headers: getAuthHeaders(),
+      validateStatus: false, // Permite tratar erros manualmente
       ...options
     };
-  
+
     try {
+      console.log('Enviando requisição para:', url);
+      console.log('Configuração:', {
+        ...config,
+        headers: { ...config.headers, Authorization: '[REDACTED]' }
+      });
+
       const response = await fetch(url, config);
-      
+      const responseData = response.status !== 204 ? await response.json().catch(() => ({})) : null;
+
+      console.log('Status da resposta:', response.status);
+      console.log('Dados da resposta:', responseData);
+
+      // Tratamento específico de erros
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Erro HTTP: ${response.status}`);
+        if (response.status === 401) {
+          localStorage.removeItem('authToken'); // Limpa o token inválido
+          throw new Error('Sessão expirada. Por favor, faça login novamente.');
+        }
+        
+        if (response.status === 403) {
+          throw new Error('Acesso negado. Você não tem permissão para realizar esta ação.');
+        }
+        
+        if (response.status === 500) {
+          console.error('Erro do servidor:', responseData);
+          throw new Error('Erro interno do servidor. Por favor, tente novamente em alguns minutos.');
+        }
+
+        throw new Error(responseData.message || `Erro HTTP: ${response.status}`);
       }
-      
-      if (response.status === 204) {
-        return { success: true };
-      }
-      
-      const data = await response.json();
-      return data;
-      
+
+      return response.status === 204 ? { success: true } : responseData;
+
     } catch (error) {
-      console.error('Erro na requisição:', error);
-      
+      console.error('Erro detalhado:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+        url,
+        method: options.method || 'GET'
+      });
+
+      // Tratamento de erros de rede
       if (error.name === 'TypeError' || error.name === 'NetworkError') {
-        throw new Error('Erro de conexão. Verifique sua internet.');
+        throw new Error('Erro de conexão. Verifique sua internet e se o servidor está rodando.');
       }
-      
+
+      // Tratamento de timeout
       if (error.name === 'AbortError') {
-        throw new Error('Tempo limite da requisição esgotado.');
+        throw new Error('Tempo limite da requisição esgotado. Tente novamente.');
       }
-      
+
       throw error;
     }
   };

@@ -1,100 +1,49 @@
 import React, { useState, useEffect } from 'react';
+import RelatorioService from '../../../../services/RelatorioService';
 import './Relatorio.css';
 
 const Relatorio = () => {
-  const [vendas, setVendas] = useState([]);
+  const [relatorioData, setRelatorioData] = useState(null);
+  const [feedbacks, setFeedbacks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [filtroMes, setFiltroMes] = useState('');
   const [filtroAno, setFiltroAno] = useState('');
-  const [estatisticas, setEstatisticas] = useState({
-    totalGeral: 0,
-    totalMes: 0,
-    totalAno: 0,
-    quantidadeVendasMes: 0,
-    quantidadeVendasAno: 0
-  });
-
-  // Dados de exemplo - substitua pela sua API
-  const vendasExemplo = [
-    { id: 1, produto: 'Smartphone Samsung', valor: 1200.00, data: '2025-05-15', cliente: 'João Silva' },
-    { id: 2, produto: 'Notebook Dell', valor: 2500.00, data: '2025-05-20', cliente: 'Maria Santos' },
-    { id: 3, produto: 'Fone Bluetooth', valor: 150.00, data: '2025-04-10', cliente: 'Pedro Costa' },
-    { id: 4, produto: 'Tablet iPad', valor: 1800.00, data: '2025-05-25', cliente: 'Ana Oliveira' },
-    { id: 5, produto: 'Smartwatch', valor: 400.00, data: '2024-12-15', cliente: 'Carlos Lima' },
-    { id: 6, produto: 'Câmera Digital', valor: 800.00, data: '2025-03-08', cliente: 'Lucia Ferreira' },
-    { id: 7, produto: 'Monitor 4K', valor: 600.00, data: '2025-05-28', cliente: 'Roberto Alves' }
-  ];
 
   useEffect(() => {
-    setVendas(vendasExemplo);
-    calcularEstatisticas(vendasExemplo);
+    carregarDados();
   }, []);
 
-  const calcularEstatisticas = (listaVendas) => {
-    const agora = new Date();
-    const mesAtual = agora.getMonth() + 1;
-    const anoAtual = agora.getFullYear();
-
-    let totalGeral = 0;
-    let totalMes = 0;
-    let totalAno = 0;
-    let quantidadeVendasMes = 0;
-    let quantidadeVendasAno = 0;
-
-    listaVendas.forEach(venda => {
-      const dataVenda = new Date(venda.data);
-      const mesVenda = dataVenda.getMonth() + 1;
-      const anoVenda = dataVenda.getFullYear();
-
-      totalGeral += venda.valor;
-
-      if (anoVenda === anoAtual) {
-        totalAno += venda.valor;
-        quantidadeVendasAno++;
-
-        if (mesVenda === mesAtual) {
-          totalMes += venda.valor;
-          quantidadeVendasMes++;
-        }
-      }
-    });
-
-    setEstatisticas({
-      totalGeral,
-      totalMes,
-      totalAno,
-      quantidadeVendasMes,
-      quantidadeVendasAno
-    });
-  };
-
-  const filtrarVendas = () => {
-    let vendasFiltradas = vendas;
-
-    if (filtroMes) {
-      vendasFiltradas = vendasFiltradas.filter(venda => {
-        const dataVenda = new Date(venda.data);
-        return dataVenda.getMonth() + 1 === parseInt(filtroMes);
-      });
+  const carregarDados = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Carregar dados do relatório
+      const relatorio = await RelatorioService.obterRelatorioCompleto();
+      setRelatorioData(relatorio);
+      
+      // Carregar feedbacks
+      const feedbacksData = await RelatorioService.obterFeedbacks();
+      setFeedbacks(feedbacksData.content || feedbacksData || []);
+      
+    } catch (err) {
+      setError('Erro ao carregar dados do relatório');
+      console.error('Erro ao carregar relatório:', err);
+    } finally {
+      setLoading(false);
     }
-
-    if (filtroAno) {
-      vendasFiltradas = vendasFiltradas.filter(venda => {
-        const dataVenda = new Date(venda.data);
-        return dataVenda.getFullYear() === parseInt(filtroAno);
-      });
-    }
-
-    return vendasFiltradas;
   };
 
   const formatarMoeda = (valor) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
-    }).format(valor);
+    }).format(valor || 0);
   };
 
   const formatarData = (data) => {
+    if (!data) return 'N/A';
     return new Date(data).toLocaleDateString('pt-BR');
   };
 
@@ -106,128 +55,228 @@ const Relatorio = () => {
     return meses[numeroMes - 1];
   };
 
-  const vendasFiltradas = filtrarVendas();
+  const renderEstrelas = (nota) => {
+    const estrelas = [];
+    for (let i = 1; i <= 5; i++) {
+      estrelas.push(
+        <span key={i} className={`estrela ${i <= nota ? 'preenchida' : ''}`}>
+          ⭐
+        </span>
+      );
+    }
+    return estrelas;
+  };
+
+  const calcularMediaAvaliacoes = () => {
+    if (feedbacks.length === 0) return 0;
+    const soma = feedbacks.reduce((acc, feedback) => acc + feedback.nota, 0);
+    return (soma / feedbacks.length).toFixed(1);
+  };
+
+  if (loading) {
+    return (
+      <div className="vendas-container">
+        <div className="vendas-header">
+          <h2>Relatório Financeiro</h2>
+        </div>
+        <div className="loading">Carregando relatório...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="vendas-container">
+        <div className="vendas-header">
+          <h2>Relatório Financeiro</h2>
+        </div>
+        <div className="error">
+          <p>{error}</p>
+          <button onClick={carregarDados} className="retry-btn">
+            Tentar Novamente
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const mesAtual = new Date().getMonth() + 1;
   const anoAtual = new Date().getFullYear();
 
   return (
     <div className="vendas-container">
       <div className="vendas-header">
-        <h2>Relatório de Vendas</h2>
+        <h2>Relatório Financeiro</h2>
+        <button onClick={carregarDados} className="refresh-btn">
+          🔄 Atualizar
+        </button>
       </div>
 
-      {/* Cards de Estatísticas */}
+      {/* Cards de Estatísticas Financeiras */}
       <div className="estatisticas-cards">
-        <div className="card total-geral">
+        <div className="card lucro-mensal">
           <div className="card-icon">💰</div>
           <div className="card-content">
-            <h3>Total Geral</h3>
-            <p className="valor-principal">{formatarMoeda(estatisticas.totalGeral)}</p>
-            <span className="descricao">Todas as vendas</span>
-          </div>
-        </div>
-
-        <div className="card total-mes">
-          <div className="card-icon">📅</div>
-          <div className="card-content">
-            <h3>Vendas do Mês</h3>
-            <p className="valor-principal">{formatarMoeda(estatisticas.totalMes)}</p>
+            <h3>Lucro Mensal</h3>
+            <p className="valor-principal">{formatarMoeda(relatorioData?.lucroMensal || 0)}</p>
             <span className="descricao">
-              {obterMesNome(mesAtual)} {anoAtual} • {estatisticas.quantidadeVendasMes} vendas
+              {obterMesNome(mesAtual)} {anoAtual}
             </span>
           </div>
         </div>
 
-        <div className="card total-ano">
+        <div className="card lucro-anual">
+          <div className="card-icon">📈</div>
+          <div className="card-content">
+            <h3>Lucro Anual</h3>
+            <p className="valor-principal">{formatarMoeda(relatorioData?.lucroAnual || 0)}</p>
+            <span className="descricao">
+              {anoAtual}
+            </span>
+          </div>
+        </div>
+
+        <div className="card faturamento-mensal">
           <div className="card-icon">📊</div>
           <div className="card-content">
-            <h3>Vendas do Ano</h3>
-            <p className="valor-principal">{formatarMoeda(estatisticas.totalAno)}</p>
+            <h3>Faturamento Mensal</h3>
+            <p className="valor-principal">{formatarMoeda(relatorioData?.faturamentoMensal || 0)}</p>
             <span className="descricao">
-              {anoAtual} • {estatisticas.quantidadeVendasAno} vendas
+              {relatorioData?.pedidosMensal || 0} pedidos
+            </span>
+          </div>
+        </div>
+
+        <div className="card faturamento-anual">
+          <div className="card-icon">💼</div>
+          <div className="card-content">
+            <h3>Faturamento Anual</h3>
+            <p className="valor-principal">{formatarMoeda(relatorioData?.faturamentoAnual || 0)}</p>
+            <span className="descricao">
+              {relatorioData?.pedidosAnual || 0} pedidos
             </span>
           </div>
         </div>
       </div>
 
-      {/* Filtros */}
-      <div className="filtros-container">
-        <h3>Filtrar Vendas</h3>
-        <div className="filtros">
-          <select 
-            value={filtroMes} 
-            onChange={(e) => setFiltroMes(e.target.value)}
-            className="filtro-select"
-          >
-            <option value="">Todos os meses</option>
-            {Array.from({length: 12}, (_, i) => (
-              <option key={i + 1} value={i + 1}>
-                {obterMesNome(i + 1)}
-              </option>
-            ))}
-          </select>
+      {/* Métricas Adicionais */}
+      <div className="metricas-adicionais">
+        <div className="metrica-card">
+          <h3>📊 Margem de Lucro</h3>
+          <div className="metrica-content">
+            <div className="metrica-item">
+              <span>Mensal:</span>
+              <span className="valor-destaque">
+                {relatorioData?.margemLucroMensal ? `${relatorioData.margemLucroMensal.toFixed(1)}%` : '0%'}
+              </span>
+            </div>
+            <div className="metrica-item">
+              <span>Anual:</span>
+              <span className="valor-destaque">
+                {relatorioData?.margemLucroAnual ? `${relatorioData.margemLucroAnual.toFixed(1)}%` : '0%'}
+              </span>
+            </div>
+          </div>
+        </div>
 
-          <select 
-            value={filtroAno} 
-            onChange={(e) => setFiltroAno(e.target.value)}
-            className="filtro-select"
-          >
-            <option value="">Todos os anos</option>
-            <option value="2025">2025</option>
-            <option value="2024">2024</option>
-            <option value="2023">2023</option>
-          </select>
-
-          <button 
-            onClick={() => {setFiltroMes(''); setFiltroAno('');}}
-            className="limpar-filtros"
-          >
-            Limpar Filtros
-          </button>
+        <div className="metrica-card">
+          <h3>🎯 Ticket Médio</h3>
+          <div className="metrica-content">
+            <div className="metrica-item">
+              <span>Mensal:</span>
+              <span className="valor-destaque">{formatarMoeda(relatorioData?.ticketMedioMensal || 0)}</span>
+            </div>
+            <div className="metrica-item">
+              <span>Anual:</span>
+              <span className="valor-destaque">{formatarMoeda(relatorioData?.ticketMedioAnual || 0)}</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Tabela de Vendas */}
-      <div className="vendas-tabela">
-        <h3>Lista de Vendas {vendasFiltradas.length !== vendas.length && '(Filtrada)'}</h3>
-        
-        {vendasFiltradas.length > 0 ? (
-          <div className="tabela-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Produto</th>
-                  <th>Cliente</th>
-                  <th>Data</th>
-                  <th>Valor</th>
-                </tr>
-              </thead>
-              <tbody>
-                {vendasFiltradas.map(venda => (
-                  <tr key={venda.id}>
-                    <td>#{venda.id}</td>
-                    <td>{venda.produto}</td>
-                    <td>{venda.cliente}</td>
-                    <td>{formatarData(venda.data)}</td>
-                    <td className="valor">{formatarMoeda(venda.valor)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            
-            <div className="resumo-filtrado">
-              <strong>
-                Total filtrado: {formatarMoeda(vendasFiltradas.reduce((sum, venda) => sum + venda.valor, 0))}
-                {' '}• {vendasFiltradas.length} vendas
-              </strong>
+      {/* Seção de Feedbacks */}
+      <div className="feedbacks-section">
+        <div className="feedbacks-header">
+          <h3>⭐ Avaliações dos Clientes</h3>
+          <div className="media-avaliacoes">
+            <span className="media-numero">{calcularMediaAvaliacoes()}</span>
+            <div className="estrelas-media">
+              {renderEstrelas(Math.round(calcularMediaAvaliacoes()))}
             </div>
+            <span className="total-avaliacoes">({feedbacks.length} avaliações)</span>
+          </div>
+        </div>
+
+        {feedbacks.length === 0 ? (
+          <div className="sem-feedbacks">
+            <p>Nenhuma avaliação recebida ainda.</p>
           </div>
         ) : (
-          <div className="sem-vendas">
-            <p>Nenhuma venda encontrada para os filtros selecionados.</p>
+          <div className="feedbacks-lista">
+            {feedbacks.slice(0, 10).map(feedback => (
+              <div key={feedback.id} className="feedback-card">
+                <div className="feedback-header">
+                  <div className="cliente-info">
+                    <strong>{feedback.cliente?.nome || 'Cliente'}</strong>
+                    <span className="data-feedback">{formatarData(feedback.dataAvaliacao)}</span>
+                  </div>
+                  <div className="nota-feedback">
+                    {renderEstrelas(feedback.nota)}
+                  </div>
+                </div>
+                {feedback.comentario && (
+                  <div className="feedback-comentario">
+                    <p>"{feedback.comentario}"</p>
+                  </div>
+                )}
+                {feedback.pedido && (
+                  <div className="feedback-pedido">
+                    <small>Pedido #{feedback.pedido.id}</small>
+                  </div>
+                )}
+              </div>
+            ))}
+            
+            {feedbacks.length > 10 && (
+              <div className="mais-feedbacks">
+                <p>E mais {feedbacks.length - 10} avaliações...</p>
+              </div>
+            )}
           </div>
         )}
+      </div>
+
+      {/* Resumo Geral */}
+      <div className="resumo-geral">
+        <h3>📋 Resumo Geral</h3>
+        <div className="resumo-grid">
+          <div className="resumo-item">
+            <span>Total de Produtos:</span>
+            <span>{relatorioData?.totalProdutos || 0}</span>
+          </div>
+          <div className="resumo-item">
+            <span>Produtos Ativos:</span>
+            <span>{relatorioData?.produtosAtivos || 0}</span>
+          </div>
+          <div className="resumo-item">
+            <span>Total de Pedidos (Ano):</span>
+            <span>{relatorioData?.pedidosAnual || 0}</span>
+          </div>
+          <div className="resumo-item">
+            <span>Pedidos Entregues:</span>
+            <span>{relatorioData?.pedidosEntregues || 0}</span>
+          </div>
+          <div className="resumo-item">
+            <span>Taxa de Satisfação:</span>
+            <span>{calcularMediaAvaliacoes()}/5.0</span>
+          </div>
+          <div className="resumo-item">
+            <span>Crescimento Mensal:</span>
+            <span className={relatorioData?.crescimentoMensal >= 0 ? 'positivo' : 'negativo'}>
+              {relatorioData?.crescimentoMensal ? `${relatorioData.crescimentoMensal.toFixed(1)}%` : '0%'}
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   );
