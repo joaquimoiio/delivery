@@ -44,16 +44,33 @@ const CadastroProdutos = () => {
     }
   }, [activeTab]);
 
+  // Lista completa de categorias permitidas incluindo açaí e bebidas
   const allowedCategoryNames = ['Hamburgueria', 'Comida Japonesa', 'Pizzaria', 'Açaí', 'Bebidas'];
 
   const carregarCategorias = async () => {
     try {
       const response = await CategoriaService.listarCategorias();
       const allCategories = response.content || response || [];
-      const filteredCategories = allCategories.filter(c => allowedCategoryNames.includes(c.nome));
+      
+      // Filtrar categorias permitidas (incluindo açaí e bebidas)
+      const filteredCategories = allCategories.filter(c => 
+        allowedCategoryNames.includes(c.nome)
+      );
+      
+      console.log('Categorias disponíveis:', filteredCategories); // Debug
       setCategorias(filteredCategories);
     } catch (error) {
       console.error('Erro ao carregar categorias:', error);
+      
+      // Fallback: criar categorias padrão se a API falhar
+      const categoriasDefault = [
+        { id: 1, nome: 'Hamburgueria' },
+        { id: 2, nome: 'Comida Japonesa' },
+        { id: 3, nome: 'Pizzaria' },
+        { id: 4, nome: 'Açaí' },
+        { id: 5, nome: 'Bebidas' }
+      ];
+      setCategorias(categoriasDefault);
     }
   };
 

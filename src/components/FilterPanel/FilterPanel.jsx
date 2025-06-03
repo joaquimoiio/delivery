@@ -1,4 +1,4 @@
-// src/components/FilterPanel/FilterPanel.jsx - Versão Compacta
+// src/components/FilterPanel/FilterPanel.jsx - Versão Corrigida com Todas as Categorias
 import React, { useState } from 'react';
 import './FilterPanel.css';
 
@@ -8,6 +8,7 @@ const FilterPanel = ({ filtros, onFiltroChange, onLimparFiltros, isOpen, onToggl
     filtros.precoMaximo || 100
   ]);
 
+  // Lista completa de categorias incluindo bebidas e açaí
   const categorias = [
     { id: 'hamburgueria', nome: 'Burger', icon: '🍔' },
     { id: 'pizzaria', nome: 'Pizza', icon: '🍕' },

@@ -113,13 +113,13 @@ const Store = () => {
       <Navbar />
       
         <div className="store-content">
-          <div className="search-container">
+          {/*<div className="search-container">
             <SearchBar 
               onSearch={handleSearch}
               placeholder="Buscar produtos..."
               initialValue={searchTerm}
             />
-          </div>
+          </div>*/}
         {/* Banner da Loja */}
         <div className="store-banner">
           <img 

@@ -1,4 +1,4 @@
-/* src/components/FilterPanel/FilterPanel.css - Layout Reorganizado */
+/* src/components/FilterPanel/FilterPanel.css - Layout Reorganizado com 5 Categorias */
 .filter-toggle {
   display: none;
   align-items: center;
@@ -138,11 +138,16 @@
   letter-spacing: 0.5px;
 }
 
-/* Filtros de Categoria - Layout Grid Compacto */
+/* Filtros de Categoria - Layout Grid para 5 Itens */
 .category-filters {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, 1fr);
   gap: 6px;
+}
+
+/* Ajuste para 5 categorias - última categoria ocupa duas colunas em desktop */
+.category-filter-btn:nth-child(5) {
+  grid-column: 1 / -1;
 }
 
 .category-filter-btn {
@@ -524,6 +529,11 @@
   .category-filters {
     grid-template-columns: 1fr 1fr;
   }
+
+  /* Remove o comportamento especial da quinta categoria no mobile */
+  .category-filter-btn:nth-child(5) {
+    grid-column: auto;
+  }
 }
 
 @media (max-width: 480px) {
@@ -542,8 +552,16 @@
     margin: 0;
   }
 
+  /* Layout 2x3 para telas muito pequenas com 5 categorias */
   .category-filters {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .category-filter-btn:nth-child(5) {
+    grid-column: 1 / -1;
+    max-width: 50%;
+    margin: 0 auto;
   }
 
   .rating-filters {
