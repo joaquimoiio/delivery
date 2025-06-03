@@ -133,6 +133,7 @@ class PedidoService {
   async atualizarStatusPedido(id, status) {
     try {
       const endpoint = API_CONFIG.ENDPOINTS.EMPRESA.PEDIDO_STATUS.replace('{id}', id);
+      // Send status as query parameter
       const params = { status };
       return await api.patch(endpoint, {}, params);
     } catch (error) {
@@ -152,10 +153,34 @@ class PedidoService {
     }
   }
 
+    // Marcar pedido como cancelado
+  async marcarComoCancelado(pedidoId) {
+    try {
+      const endpoint = API_CONFIG.ENDPOINTS.EMPRESA.PEDIDO_CANCELADO.replace('{id}', pedidoId);
+      return await api.patch(endpoint);
+    } catch (error) {
+      console.error('Erro ao marcar pedido como cancelado:', error);
+      throw error;
+    }
+  }
+
   // Criar feedback/avaliação
   async criarFeedback(feedbackData) {
     try {
-      return await api.post(API_CONFIG.ENDPOINTS.CLIENTE.FEEDBACK, feedbackData);
+      const endpoint = API_CONFIG.ENDPOINTS.CLIENTE.FEEDBACK.replace('{pedidoId}', feedbackData.pedidoId);
+      const body = {
+        nota: feedbackData.nota,
+        comentario: feedbackData.comentario || ''
+      };
+      console.log('Enviando feedback:', {
+        endpoint,
+        pedidoId: feedbackData.pedidoId,
+        nota: feedbackData.nota,
+        comentario: feedbackData.comentario
+      });
+      const response = await api.post(endpoint, body);
+      console.log('Resposta do feedback:', response);
+      return response;
     } catch (error) {
       console.error('Erro ao criar feedback:', error);
       throw error;
@@ -170,6 +195,21 @@ class PedidoService {
     } catch (error) {
       console.error('Erro ao listar feedbacks da empresa:', error);
       throw error;
+    }
+  }
+
+  // Verificar se pedido já foi avaliado
+  async verificarFeedbackPedido(pedidoId) {
+    try {
+      const endpoint = API_CONFIG.ENDPOINTS.CLIENTE.FEEDBACK.replace('{pedidoId}', pedidoId);
+      const response = await api.get(endpoint);
+      return response && response.id; // retorna true se existe feedback
+    } catch (error) {
+      if (error.response && error.response.status === 404) {
+        return false; // pedido não foi avaliado ainda
+      }
+      console.error('Erro ao verificar feedback do pedido:', error);
+      return false;
     }
   }
 

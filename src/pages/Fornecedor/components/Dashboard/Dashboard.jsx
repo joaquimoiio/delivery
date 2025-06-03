@@ -81,6 +81,17 @@ const Dashboard = () => {
     }
   };
 
+  const handleMarcarCancelado = async (pedidoId) => {
+    try {
+      await PedidoService.atualizarStatusPedido(pedidoId, 'CANCELADO');
+      alert('Pedido marcado como cancelado.');
+      carregarDados(); // Recarregar dados
+    } catch (error) {
+      console.error('Erro ao marcar pedido como cancelado:', error);
+      alert('Erro ao marcar pedido como cancelado');
+    }
+  };
+
   const formatarMoeda = (valor) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -311,6 +322,13 @@ const Dashboard = () => {
                         title="Marcar como entregue"
                       >
                         ✅ Marcar como Entregue
+                      </button>
+                      <button
+                        className="cancelar-btn"
+                        onClick={() => handleMarcarCancelado(pedido.id)}
+                        title="Marcar como cancelado"
+                      >
+                        ❌ Marcar como Cancelado
                       </button>
                     </div>
                   )}

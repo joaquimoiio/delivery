@@ -1,6 +1,7 @@
-// src/pages/OrderHistory/OrderHistory.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import PedidoService from '../../services/PedidoService';
+import FeedbackModal from '../../components/FeedbackModal/FeedbackModal';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
 import './OrderHistory.css';
@@ -10,84 +11,100 @@ const OrderHistory = () => {
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
   useEffect(() => {
     loadOrders();
-  }, []);
+  }, [filter]); // Reload when filter changes
 
   const loadOrders = async () => {
     setIsLoading(true);
-    
-    // Simular carregamento de pedidos
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Dados de exemplo
-    const mockOrders = [
-      {
-        id: 1,
-        date: '2025-05-30',
-        time: '14:30',
-        store: 'Burger House',
-        items: [
-          { name: 'X-Bacon', quantity: 2, price: 25.90 },
-          { name: 'Batata Frita', quantity: 1, price: 12.00 }
-        ],
-        total: 63.80,
-        status: 'entregue',
-        deliveryTime: 35,
-        paymentMethod: 'Cartão de Crédito'
-      },
-      {
-        id: 2,
-        date: '2025-05-28',
-        time: '19:15',
-        store: 'Açaí Premium',
-        items: [
-          { name: 'Açaí 500ml', quantity: 1, price: 18.50 },
-          { name: 'Granola Extra', quantity: 1, price: 3.00 }
-        ],
-        total: 21.50,
-        status: 'entregue',
-        deliveryTime: 25,
-        paymentMethod: 'PIX'
-      },
-      {
-        id: 3,
-        date: '2025-05-25',
-        time: '12:45',
-        store: 'Pizza Bella',
-        items: [
-          { name: 'Pizza Margherita', quantity: 1, price: 42.00 }
-        ],
-        total: 42.00,
-        status: 'cancelado',
-        deliveryTime: 50,
-        paymentMethod: 'Dinheiro'
+    try {
+      let response;
+      if (filter === 'all') {
+        response = await PedidoService.listarMeusPedidos();
+      } else {
+        response = await PedidoService.listarPedidosPorStatus(filter.toUpperCase());
       }
-    ];
-    
-    setOrders(mockOrders);
-    setIsLoading(false);
+      
+      // Transform the API response to match the component's expected format
+      const transformedOrders = await Promise.all((response?.content || []).map(async order => {
+        const hasBeenEvaluated = await PedidoService.verificarFeedbackPedido(order.id);
+        return {
+          id: order.id,
+          date: order.dataPedido,
+          time: new Date(order.dataPedido).toLocaleTimeString('pt-BR'),
+          store: order.nomeEmpresa,
+          items: order.itens?.map(item => ({
+            name: item.nomeProduto,
+            quantity: item.quantidade,
+            price: item.precoUnitario
+          })) || [],
+          total: order.total,
+          status: order.status?.toLowerCase() || 'pendente',
+          paymentMethod: order.formaPagamento,
+          hasBeenEvaluated
+        };
+      }));
+
+      setOrders(transformedOrders);
+    } catch (error) {
+      console.error('Erro ao carregar pedidos:', error);
+      setOrders([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleOpenFeedbackModal = (order) => {
+    setSelectedOrder(order);
+    setShowFeedbackModal(true);
+  };
+
+  const handleCloseFeedbackModal = () => {
+    setSelectedOrder(null);
+    setShowFeedbackModal(false);
+  };
+
+  const handleSubmitFeedback = async (feedbackData) => {
+    try {
+      await PedidoService.criarFeedback({
+        pedidoId: feedbackData.pedidoId,
+        nota: feedbackData.nota,
+        comentario: feedbackData.comentario
+      });
+      alert('Avaliação enviada com sucesso!');
+      handleCloseFeedbackModal();
+      loadOrders(); // Reload orders to update feedback status
+    } catch (error) {
+      console.error('Erro ao enviar avaliação:', error);
+      alert('Erro ao enviar avaliação. Tente novamente.');
+    }
   };
 
   const getStatusColor = (status) => {
-    switch (status) {
-      case 'entregue': return '#22c55e';
-      case 'cancelado': return '#ef4444';
-      case 'preparando': return '#fbbf24';
-      case 'a caminho': return '#3b82f6';
-      default: return '#6b7280';
-    }
+    const statusColors = {
+      'entregue': '#22c55e',
+      'cancelado': '#ef4444',
+      'preparando': '#fbbf24',
+      'a_caminho': '#3b82f6',
+      'pendente': '#6b7280',
+      'confirmado': '#17a2b8'
+    };
+    return statusColors[status] || '#6b7280';
   };
 
   const getStatusText = (status) => {
-    switch (status) {
-      case 'entregue': return 'Entregue';
-      case 'cancelado': return 'Cancelado';
-      case 'preparando': return 'Preparando';
-      case 'a caminho': return 'A Caminho';
-      default: return 'Desconhecido';
-    }
+    const statusTexts = {
+      'entregue': 'Entregue',
+      'cancelado': 'Cancelado',
+      'preparando': 'Preparando',
+      'a_caminho': 'A Caminho',
+      'pendente': 'Pendente',
+      'confirmado': 'Confirmado'
+    };
+    return statusTexts[status] || 'Desconhecido';
   };
 
   const filteredOrders = orders.filter(order => {
@@ -96,6 +113,7 @@ const OrderHistory = () => {
   });
 
   const formatDate = (dateString) => {
+    if (!dateString) return '';
     return new Date(dateString).toLocaleDateString('pt-BR');
   };
 
@@ -103,7 +121,7 @@ const OrderHistory = () => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
-    }).format(price);
+    }).format(price || 0);
   };
 
   return (
@@ -173,7 +191,7 @@ const OrderHistory = () => {
                   <div className="order-items">
                     <h4>Itens do pedido:</h4>
                     <ul>
-                      {order.items.map((item, index) => (
+                      {(order.items || []).map((item, index) => (
                         <li key={index}>
                           <span className="item-name">
                             {item.quantity}x {item.name}
@@ -188,13 +206,23 @@ const OrderHistory = () => {
 
                   <div className="order-footer">
                     <div className="order-details">
-                      <span>Tempo de entrega: {order.deliveryTime} min</span>
                       <span>Pagamento: {order.paymentMethod}</span>
                     </div>
                     <div className="order-total">
                       <strong>Total: {formatPrice(order.total)}</strong>
                     </div>
                   </div>
+
+                  {order.status === 'entregue' && !order.hasBeenEvaluated && (
+                    <div className="order-feedback">
+                      <button 
+                        className="feedback-btn"
+                        onClick={() => handleOpenFeedbackModal(order)}
+                      >
+                        Avaliar Pedido
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -203,6 +231,14 @@ const OrderHistory = () => {
       </div>
 
       <Footer />
+
+      {showFeedbackModal && selectedOrder && (
+        <FeedbackModal 
+          pedido={selectedOrder} 
+          onSubmit={handleSubmitFeedback} 
+          onClose={handleCloseFeedbackModal} 
+        />
+      )}
     </div>
   );
 };
