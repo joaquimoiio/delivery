@@ -80,7 +80,7 @@ const Navbar = () => {
           {isLoggedIn ? (
             <>
               {/* Barra de pesquisa */}
-              <div className="search-container">
+              {/*<div className="search-container">
                 <form onSubmit={handleSearch}>
                   <input
                     type="text"
@@ -93,7 +93,7 @@ const Navbar = () => {
                     🔍
                   </button>
                 </form>
-              </div>
+              </div> */}
 
               {/* Dropdown do perfil */}
               <div className="profile-dropdown" ref={dropdownRef}>

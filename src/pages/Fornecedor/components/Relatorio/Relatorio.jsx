@@ -114,28 +114,6 @@ const Relatorio = () => {
 
       {/* Cards de Estatísticas Financeiras */}
       <div className="estatisticas-cards">
-        <div className="card lucro-mensal">
-          <div className="card-icon">💰</div>
-          <div className="card-content">
-            <h3>Lucro Mensal</h3>
-            <p className="valor-principal">{formatarMoeda(relatorioData?.lucroMensal || 0)}</p>
-            <span className="descricao">
-              {obterMesNome(mesAtual)} {anoAtual}
-            </span>
-          </div>
-        </div>
-
-        <div className="card lucro-anual">
-          <div className="card-icon">📈</div>
-          <div className="card-content">
-            <h3>Lucro Anual</h3>
-            <p className="valor-principal">{formatarMoeda(relatorioData?.lucroAnual || 0)}</p>
-            <span className="descricao">
-              {anoAtual}
-            </span>
-          </div>
-        </div>
-
         <div className="card faturamento-mensal">
           <div className="card-icon">📊</div>
           <div className="card-content">

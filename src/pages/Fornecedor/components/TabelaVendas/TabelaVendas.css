@@ -3,6 +3,27 @@
   background: #2A2C2F;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  margin-left: 250px;
+  transition: margin-left 0.3s ease;
+  width: calc(100% - 250px);
+}
+
+/* Adjust margin when menu is collapsed */
+.menu-sidebar.collapsed ~ .main-content .tabela-relatorios {
+  margin-left: 70px;
+  width: calc(100% - 70px);
+}
+
+@media (max-width: 768px) {
+  .tabela-relatorios {
+    margin-left: 0;
+    width: 100%;
+  }
+  
+  .menu-sidebar.collapsed ~ .main-content .tabela-relatorios {
+    margin-left: 0;
+    width: 100%;
+  }
 }
 
 .tabela-header {

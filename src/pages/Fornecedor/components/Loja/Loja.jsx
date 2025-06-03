@@ -19,7 +19,7 @@ const Loja = () => {
     novaSenha: '',
     confirmarNovaSenha: '',
     descricao: '',
-    linkLogo: ''
+    logoUrl: ''
   });
   const [isMapOpen, setIsMapOpen] = useState(false);
 
@@ -106,7 +106,7 @@ const Loja = () => {
             nuLatitude: response.nuLatitude || '',
             nuLongitude: response.nuLongitude || '',
             descricao: response.descricao || '',
-            linkLogo: response.linkLogo || '',
+            logoUrl: response.logoUrl || '',
             senhaAtual: '',
             novaSenha: '',
             confirmarNovaSenha: ''
@@ -149,7 +149,7 @@ const Loja = () => {
         nuLatitude: formData.nuLatitude,
         nuLongitude: formData.nuLongitude,
         descricao: formData.descricao,
-        linkLogo: formData.linkLogo
+        logoUrl: formData.logoUrl
       };
 
       // Atualizar perfil
@@ -325,8 +325,8 @@ const Loja = () => {
             <div className="form-row">
               <input
                 type="url"
-                name="linkLogo"
-                value={formData.linkLogo}
+                name="logoUrl"
+                value={formData.logoUrl}
                 onChange={handleChange}
                 placeholder="Link da Logo"
                 className="form-input"
@@ -407,8 +407,8 @@ const Loja = () => {
           <div className="preview-section">
             <h3>👁️ Pré-visualização</h3>
             <div className="product-preview">
-              {formData.linkLogo ? (
-                <img src={formData.linkLogo} alt="Logo" className="preview-image" />
+              {formData.logoUrl ? (
+                <img src={formData.logoUrl} alt="Logo" className="preview-image" />
               ) : (
                 <div style={{padding: '2rem', color: 'var(--text-muted)'}}>
                   Nenhuma logo

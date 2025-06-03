@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
 import ProductModal from '../../components/ProductModal/ProductModal';
+import SearchBar from '../../components/SearchBar/SearchBar';
 import { useAuth } from '../../context/AuthContext';
 import EmpresaService from '../../services/EmpresaService';
 import './Store.css';
@@ -16,6 +17,8 @@ const Store = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredProducts, setFilteredProducts] = useState([]);
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -33,7 +36,9 @@ const Store = () => {
       const productsData = await EmpresaService.buscarProdutosEmpresa(id);
       
       setStore(storeData);
-      setProducts(productsData || []);
+      const productsArray = productsData || [];
+      setProducts(productsArray);
+      setFilteredProducts(productsArray);
     } catch (error) {
       console.error('Erro ao carregar dados da loja:', error);
       setStore(null);
@@ -41,6 +46,23 @@ const Store = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Filter products based on search term
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setFilteredProducts(products);
+    } else {
+      const filtered = products.filter(product => 
+        product.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.descricao.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredProducts(filtered);
+    }
+  }, [searchTerm, products]);
+
+  const handleSearch = (term) => {
+    setSearchTerm(term);
   };
 
   const handleBuyClick = (product) => {
@@ -90,10 +112,23 @@ const Store = () => {
     <div className="store-page">
       <Navbar />
       
-      <div className="store-content">
+        <div className="store-content">
+          <div className="search-container">
+            <SearchBar 
+              onSearch={handleSearch}
+              placeholder="Buscar produtos..."
+              initialValue={searchTerm}
+            />
+          </div>
         {/* Banner da Loja */}
         <div className="store-banner">
-          <img src={store.imagem} alt={store.nome} />
+          <img 
+            src={store.logoUrl || store.imagem || 'https://via.placeholder.com/800x200?text=Loja'} 
+            alt={store.nome}
+            onError={(e) => {
+              e.target.src = 'https://via.placeholder.com/800x200?text=Loja';
+            }}
+          />
           <div className="store-overlay">
             <div className="store-info-banner">
               <h1>{store.nome}</h1>
@@ -119,9 +154,9 @@ const Store = () => {
           <div className="products-container">
             <h2>Cardápio</h2>
             
-                {products.length > 0 ? (
+                {filteredProducts.length > 0 ? (
                   <div className="products-grid">
-                    {products.map(product => (
+                    {filteredProducts.map(product => (
                       <div key={product.id} className="product-card">
                         <div className="product-image">
                           <img 
