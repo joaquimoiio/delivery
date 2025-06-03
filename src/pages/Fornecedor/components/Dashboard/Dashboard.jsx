@@ -228,20 +228,6 @@ const Dashboard = () => {
             </div>
           </div>
           
-          <div className="metric-card lucro">
-            <div className="metric-icon">📈</div>
-            <div className="metric-content">
-              <h3>Lucro Mensal</h3>
-              <div className="metric-number">
-                {formatarMoeda(dashboardData.lucroMes)}
-              </div>
-              {dashboardData.variacaoLucro !== undefined && (
-                <div className={`metric-variation ${getVariacaoClass(dashboardData.variacaoLucro)}`}>
-                  {formatarPorcentagem(dashboardData.variacaoLucro)} vs mês anterior
-                </div>
-              )}
-            </div>
-          </div>
           
           <div className="metric-card pedidos">
             <div className="metric-icon">📦</div>
@@ -348,16 +334,8 @@ const Dashboard = () => {
                 <span className="annual-value">{formatarMoeda(dashboardData.faturamentoAno)}</span>
               </div>
               <div className="annual-item">
-                <span className="annual-label">Lucro:</span>
-                <span className="annual-value">{formatarMoeda(dashboardData.lucroAno)}</span>
-              </div>
-              <div className="annual-item">
                 <span className="annual-label">Pedidos:</span>
                 <span className="annual-value">{dashboardData.pedidosAno || 0}</span>
-              </div>
-              <div className="annual-item">
-                <span className="annual-label">Margem de Lucro:</span>
-                <span className="annual-value">{formatarPorcentagem(dashboardData.margemLucroAno || 0)}</span>
               </div>
             </div>
           </div>
