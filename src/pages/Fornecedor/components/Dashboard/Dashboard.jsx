@@ -1,4 +1,4 @@
-// src/pages/Fornecedor/components/Dashboard/Dashboard.jsx
+// src/pages/Fornecedor/components/Dashboard/Dashboard.jsx - VERSÃO CORRIGIDA
 import React, { useState, useEffect } from 'react';
 import RelatorioService from '../../../../services/RelatorioService';
 import PedidoService from '../../../../services/PedidoService';
@@ -10,6 +10,7 @@ const Dashboard = () => {
   const [pedidos, setPedidos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [loadingPedidos, setLoadingPedidos] = useState(false);
 
   useEffect(() => {
     carregarDados();
@@ -20,75 +21,148 @@ const Dashboard = () => {
       setLoading(true);
       setError(null);
       
-      // Carregar dados do dashboard
-      const data = await RelatorioService.obterDadosDashboard();
+      // Carregar dados em paralelo para melhor performance
+      const [relatorioData, pedidosData, produtosStats] = await Promise.allSettled([
+        RelatorioService.obterDadosDashboard().catch(err => {
+          console.error('Erro ao carregar relatório:', err);
+          return null;
+        }),
+        PedidoService.listarPedidosEmpresa().catch(err => {
+          console.error('Erro ao carregar pedidos:', err);
+          return { content: [] };
+        }),
+        ProdutoService.obterEstatisticasProdutos().catch(err => {
+          console.error('Erro ao carregar estatísticas de produtos:', err);
+          return { total: 0, ativos: 0, baixoEstoque: 0 };
+        })
+      ]);
+
+      // Processar resultado do relatório
+      const relatorio = relatorioData.status === 'fulfilled' ? relatorioData.value : {};
       
-      // Carregar estatísticas de produtos
-      const produtosStats = await ProdutoService.obterEstatisticasProdutos();
+      // Processar resultado dos produtos
+      const statsData = produtosStats.status === 'fulfilled' ? produtosStats.value : {
+        total: 0,
+        ativos: 0,
+        baixoEstoque: 0
+      };
       
-      // Combinar dados
+      // Combinar dados do dashboard
       const dashboardCompleto = {
-        ...data,
-        totalProdutos: produtosStats.total || 0,
-        produtosAtivos: produtosStats.ativos || 0,
-        produtosBaixoEstoque: produtosStats.baixoEstoque || 0
+        // Dados do relatório
+        faturamentoMes: relatorio?.faturamentoMensal || 0,
+        faturamentoAno: relatorio?.faturamentoAnual || 0,
+        pedidosMes: relatorio?.pedidosMensal || 0,
+        pedidosAno: relatorio?.pedidosAnual || 0,
+        ticketMedio: relatorio?.ticketMedioMensal || 0,
+        avaliacaoMedia: relatorio?.avaliacaoMedia || 0,
+        totalAvaliacoes: relatorio?.totalAvaliacoes || 0,
+        variacaoFaturamento: relatorio?.variacaoFaturamento || 0,
+        variacaoPedidos: relatorio?.variacaoPedidos || 0,
+        
+        // Dados dos produtos
+        totalProdutos: statsData.total || 0,
+        produtosAtivos: statsData.ativos || 0,
+        produtosBaixoEstoque: statsData.baixoEstoque || 0
       };
       
       setDashboardData(dashboardCompleto);
 
-      // Carregar pedidos recentes com dados completos
-      const pedidosData = await PedidoService.listarPedidosEmpresa();
-      const pedidosList = pedidosData.content || pedidosData || [];
+      // Processar pedidos
+      const pedidosResult = pedidosData.status === 'fulfilled' ? pedidosData.value : { content: [] };
+      const pedidosList = Array.isArray(pedidosResult) ? pedidosResult : (pedidosResult.content || []);
       
-      // Buscar detalhes completos de cada pedido para obter o nome do cliente
-      const pedidosDetalhados = await Promise.all(
-        pedidosList.map(async (pedido) => {
+      // Buscar detalhes dos pedidos de forma mais robusta
+      const pedidosDetalhados = await Promise.allSettled(
+        pedidosList.slice(0, 10).map(async (pedido) => {
           try {
-            // Buscar detalhes completos do pedido
+            // Tentar buscar detalhes completos
             const detalhes = await PedidoService.buscarMeuPedido(pedido.id);
             return {
               ...pedido,
               ...detalhes,
-              cliente: detalhes.cliente || { nome: 'Cliente não identificado' }
+              cliente: detalhes?.cliente || pedido?.cliente || { nome: 'Cliente não identificado' }
             };
           } catch (error) {
-            console.error(`Erro ao buscar detalhes do pedido ${pedido.id}:`, error);
+            // Se falhar, usar dados básicos do pedido
             return {
               ...pedido,
-              cliente: { nome: 'Cliente não identificado' }
+              cliente: pedido?.cliente || { nome: 'Cliente não identificado' }
             };
           }
         })
       );
       
-      setPedidos(pedidosDetalhados);
+      const pedidosFinais = pedidosDetalhados
+        .filter(result => result.status === 'fulfilled')
+        .map(result => result.value);
+      
+      setPedidos(pedidosFinais);
+
     } catch (err) {
+      console.error('Erro geral no dashboard:', err);
       setError('Erro ao carregar dados do dashboard');
-      console.error('Erro no dashboard:', err);
+      
+      // Definir dados padrão em caso de erro
+      setDashboardData({
+        faturamentoMes: 0,
+        faturamentoAno: 0,
+        pedidosMes: 0,
+        pedidosAno: 0,
+        ticketMedio: 0,
+        avaliacaoMedia: 0,
+        totalAvaliacoes: 0,
+        totalProdutos: 0,
+        produtosAtivos: 0,
+        produtosBaixoEstoque: 0,
+        variacaoFaturamento: 0,
+        variacaoPedidos: 0
+      });
+      setPedidos([]);
     } finally {
       setLoading(false);
     }
   };
 
   const handleMarcarEntregue = async (pedidoId) => {
+    if (!pedidoId) {
+      alert('ID do pedido não encontrado');
+      return;
+    }
+
+    setLoadingPedidos(true);
     try {
       await PedidoService.marcarComoEntregue(pedidoId);
       alert('Pedido marcado como entregue! O cliente receberá uma notificação para avaliar.');
-      carregarDados(); // Recarregar dados
+      await carregarDados(); // Recarregar dados
     } catch (error) {
       console.error('Erro ao marcar pedido como entregue:', error);
-      alert('Erro ao marcar pedido como entregue');
+      alert('Erro ao marcar pedido como entregue: ' + (error.message || 'Tente novamente'));
+    } finally {
+      setLoadingPedidos(false);
     }
   };
 
   const handleMarcarCancelado = async (pedidoId) => {
+    if (!pedidoId) {
+      alert('ID do pedido não encontrado');
+      return;
+    }
+
+    if (!window.confirm('Tem certeza que deseja cancelar este pedido?')) {
+      return;
+    }
+
+    setLoadingPedidos(true);
     try {
       await PedidoService.atualizarStatusPedido(pedidoId, 'CANCELADO');
       alert('Pedido marcado como cancelado.');
-      carregarDados(); // Recarregar dados
+      await carregarDados(); // Recarregar dados
     } catch (error) {
       console.error('Erro ao marcar pedido como cancelado:', error);
-      alert('Erro ao marcar pedido como cancelado');
+      alert('Erro ao marcar pedido como cancelado: ' + (error.message || 'Tente novamente'));
+    } finally {
+      setLoadingPedidos(false);
     }
   };
 
@@ -107,7 +181,11 @@ const Dashboard = () => {
 
   const formatarData = (dataHora) => {
     if (!dataHora) return 'N/A';
-    return new Date(dataHora).toLocaleString('pt-BR');
+    try {
+      return new Date(dataHora).toLocaleString('pt-BR');
+    } catch (error) {
+      return 'Data inválida';
+    }
   };
 
   const getVariacaoClass = (valor) => {
@@ -117,7 +195,8 @@ const Dashboard = () => {
   };
 
   const getStatusClass = (status) => {
-    switch(status?.toLowerCase()) {
+    if (!status) return '';
+    switch(status.toLowerCase()) {
       case 'entregue':
       case 'concluido':
         return 'concluido';
@@ -127,6 +206,7 @@ const Dashboard = () => {
       case 'cancelado':
         return 'cancelado';
       case 'a_caminho':
+      case 'saiu_entrega':
         return 'a-caminho';
       default:
         return '';
@@ -134,24 +214,27 @@ const Dashboard = () => {
   };
 
   const getStatusText = (status) => {
-    switch(status?.toLowerCase()) {
+    if (!status) return 'Desconhecido';
+    switch(status.toLowerCase()) {
       case 'pendente':
         return 'Pendente';
       case 'preparando':
         return 'Preparando';
       case 'a_caminho':
+      case 'saiu_entrega':
         return 'A Caminho';
       case 'entregue':
         return 'Entregue';
       case 'cancelado':
         return 'Cancelado';
       default:
-        return status || 'Desconhecido';
+        return status;
     }
   };
 
   const podeMarcarEntregue = (status) => {
-    const s = status?.toLowerCase();
+    if (!status) return false;
+    const s = status.toLowerCase();
     return s === 'preparando' || s === 'a_caminho' || s === 'pendente';
   };
 
@@ -172,45 +255,28 @@ const Dashboard = () => {
     );
   }
 
-  if (error) {
-    return (
-      <div className="dashboard">
-        <div className="dashboard-header">
-          <h2>📊 Dashboard</h2>
-        </div>
-        <div className="dashboard-error">
-          <p>{error}</p>
-          <button onClick={carregarDados} className="retry-btn">
-            Tentar Novamente
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!dashboardData) {
-    return (
-      <div className="dashboard">
-        <div className="dashboard-header">
-          <h2>📊 Dashboard</h2>
-        </div>
-        <div className="dashboard-empty">
-          <p>Nenhum dado disponível</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="dashboard">
       <div className="dashboard-header">
         <h2>📊 Dashboard</h2>
-        <button onClick={carregarDados} className="refresh-btn">
-          🔄 Atualizar
+        <button onClick={carregarDados} className="refresh-btn" disabled={loading}>
+          🔄 {loading ? 'Carregando...' : 'Atualizar'}
         </button>
       </div>
       
       <div className="dashboard-content">
+        {error && (
+          <div className="dashboard-alerts">
+            <div className="alert warning">
+              <div className="alert-icon">⚠️</div>
+              <div className="alert-content">
+                <h4>Aviso</h4>
+                <p>{error}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Métricas Principais */}
         <div className="metrics-container">
           <div className="metric-card faturamento">
@@ -218,9 +284,9 @@ const Dashboard = () => {
             <div className="metric-content">
               <h3>Faturamento Mensal</h3>
               <div className="metric-number">
-                {formatarMoeda(dashboardData.faturamentoMes)}
+                {formatarMoeda(dashboardData?.faturamentoMes || 0)}
               </div>
-              {dashboardData.variacaoFaturamento !== undefined && (
+              {dashboardData?.variacaoFaturamento !== undefined && (
                 <div className={`metric-variation ${getVariacaoClass(dashboardData.variacaoFaturamento)}`}>
                   {formatarPorcentagem(dashboardData.variacaoFaturamento)} vs mês anterior
                 </div>
@@ -228,15 +294,14 @@ const Dashboard = () => {
             </div>
           </div>
           
-          
           <div className="metric-card pedidos">
             <div className="metric-icon">📦</div>
             <div className="metric-content">
               <h3>Pedidos do Mês</h3>
               <div className="metric-number">
-                {dashboardData.pedidosMes || 0}
+                {dashboardData?.pedidosMes || 0}
               </div>
-              {dashboardData.variacaoPedidos !== undefined && (
+              {dashboardData?.variacaoPedidos !== undefined && (
                 <div className={`metric-variation ${getVariacaoClass(dashboardData.variacaoPedidos)}`}>
                   {formatarPorcentagem(dashboardData.variacaoPedidos)} vs mês anterior
                 </div>
@@ -249,7 +314,7 @@ const Dashboard = () => {
             <div className="metric-content">
               <h3>Ticket Médio</h3>
               <div className="metric-number">
-                {formatarMoeda(dashboardData.ticketMedio)}
+                {formatarMoeda(dashboardData?.ticketMedio || 0)}
               </div>
             </div>
           </div>
@@ -273,10 +338,10 @@ const Dashboard = () => {
                   <div className="pedido-header">
                     <div className="pedido-info">
                       <span className="pedido-id">#{pedido.id}</span>
-                      <span className="pedido-cliente">{pedido.cliente?.nome || 'N/A'}</span>
+                      <span className="pedido-cliente">{pedido.cliente?.nome || 'Cliente não identificado'}</span>
                     </div>
                     <div className="pedido-valor">
-                      {formatarMoeda(pedido.total)}
+                      {formatarMoeda(pedido.total || 0)}
                     </div>
                   </div>
 
@@ -293,7 +358,7 @@ const Dashboard = () => {
                     <div className="pedido-itens">
                       <small>
                         {pedido.itens.slice(0, 2).map(item => 
-                          `${item.quantidade}x ${item.produto?.nome || 'Produto'}`
+                          `${item.quantidade || 1}x ${item.produto?.nome || item.nomeProduto || 'Produto'}`
                         ).join(', ')}
                         {pedido.itens.length > 2 && ` +${pedido.itens.length - 2} itens`}
                       </small>
@@ -306,15 +371,17 @@ const Dashboard = () => {
                         className="entregar-btn"
                         onClick={() => handleMarcarEntregue(pedido.id)}
                         title="Marcar como entregue"
+                        disabled={loadingPedidos}
                       >
-                        ✅ Marcar como Entregue
+                        ✅ {loadingPedidos ? 'Processando...' : 'Marcar como Entregue'}
                       </button>
                       <button
                         className="cancelar-btn"
                         onClick={() => handleMarcarCancelado(pedido.id)}
                         title="Marcar como cancelado"
+                        disabled={loadingPedidos}
                       >
-                        ❌ Marcar como Cancelado
+                        ❌ {loadingPedidos ? 'Processando...' : 'Marcar como Cancelado'}
                       </button>
                     </div>
                   )}
@@ -331,11 +398,11 @@ const Dashboard = () => {
             <div className="annual-data">
               <div className="annual-item">
                 <span className="annual-label">Faturamento:</span>
-                <span className="annual-value">{formatarMoeda(dashboardData.faturamentoAno)}</span>
+                <span className="annual-value">{formatarMoeda(dashboardData?.faturamentoAno || 0)}</span>
               </div>
               <div className="annual-item">
                 <span className="annual-label">Pedidos:</span>
-                <span className="annual-value">{dashboardData.pedidosAno || 0}</span>
+                <span className="annual-value">{dashboardData?.pedidosAno || 0}</span>
               </div>
             </div>
           </div>
@@ -350,15 +417,15 @@ const Dashboard = () => {
               <div className="metric-details">
                 <div className="metric-detail">
                   <span>Total:</span>
-                  <span>{dashboardData.totalProdutos || 0}</span>
+                  <span>{dashboardData?.totalProdutos || 0}</span>
                 </div>
                 <div className="metric-detail">
                   <span>Ativos:</span>
-                  <span>{dashboardData.produtosAtivos || 0}</span>
+                  <span>{dashboardData?.produtosAtivos || 0}</span>
                 </div>
                 <div className="metric-detail warning">
                   <span>Baixo Estoque:</span>
-                  <span>{dashboardData.produtosBaixoEstoque || 0}</span>
+                  <span>{dashboardData?.produtosBaixoEstoque || 0}</span>
                 </div>
               </div>
             </div>
@@ -369,17 +436,17 @@ const Dashboard = () => {
             <div className="metric-content">
               <h3>Avaliações</h3>
               <div className="metric-number rating">
-                {(dashboardData.avaliacaoMedia || 0).toFixed(1)}
+                {(dashboardData?.avaliacaoMedia || 0).toFixed(1)}
               </div>
               <div className="metric-subtitle">
-                {dashboardData.totalAvaliacoes || 0} avaliações
+                {dashboardData?.totalAvaliacoes || 0} avaliações
               </div>
             </div>
           </div>
         </div>
 
         {/* Alertas e Indicadores */}
-        {dashboardData.produtosBaixoEstoque > 0 && (
+        {(dashboardData?.produtosBaixoEstoque || 0) > 0 && (
           <div className="dashboard-alerts">
             <div className="alert warning">
               <div className="alert-icon">⚠️</div>

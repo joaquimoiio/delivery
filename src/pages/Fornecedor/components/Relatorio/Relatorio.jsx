@@ -3,6 +3,7 @@ import RelatorioService from '../../../../services/RelatorioService';
 import './Relatorio.css';
 
 const Relatorio = () => {
+  const [pedidos, setPedidos] = useState([]);
   const [relatorioData, setRelatorioData] = useState(null);
   const [feedbacks, setFeedbacks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -230,7 +231,7 @@ const Relatorio = () => {
         <div className="resumo-grid">
           <div className="resumo-item">
             <span>Total de Produtos:</span>
-            <span>{relatorioData?.totalProdutos || 0}</span>
+            <span className="pedidos-count">{pedidos.length}</span>
           </div>
           <div className="resumo-item">
             <span>Produtos Ativos:</span>
