@@ -64,7 +64,7 @@ const Navbar = () => {
             </Link>
           </li>
           <li>
-            <Link to="/categoria/comida-japonesa" className="navbar-link">
+            <Link to="/categoria/japonesa" className="navbar-link">
               Restaurante Japonês
             </Link>
           </li>
