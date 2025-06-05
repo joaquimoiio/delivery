@@ -1,9 +1,7 @@
-// src/services/BuscaService.js
 import { api } from '../config/api';
 import API_CONFIG from '../config/api';
 
 class BuscaService {
-  // Método auxiliar para adicionar informações da loja aos produtos
   async adicionarInformacoesLoja(response) {
     if (response?.content) {
       const produtosComLoja = await Promise.all(
@@ -28,7 +26,6 @@ class BuscaService {
     return response;
   }
 
-  // Listar produtos de uma empresa
   async listarProdutosDaEmpresa(empresaId) {
     try {
       const endpoint = API_CONFIG.ENDPOINTS.BUSCA.EMPRESA_PRODUTOS.replace('{empresaId}', empresaId);
@@ -40,7 +37,6 @@ class BuscaService {
     }
   }
 
-  // Listar todos os produtos com paginação
   async listarProdutos(opcoes = {}) {
     const { page = 0, size = 20 } = opcoes;
     const params = { page: page.toString(), size: size.toString() };
@@ -54,7 +50,6 @@ class BuscaService {
     }
   }
 
-  // Buscar produtos por termo e filtros opcionais
   async buscarProdutos(termo, opcoes = {}) {
     const {
       page = 0,
@@ -85,7 +80,6 @@ class BuscaService {
     }
   }
 
-  // Buscar produtos por categoria (slug ou ID)
   async buscarProdutosPorCategoria(categoriaSlugOuId, opcoes = {}) {
     const { page = 0, size = 20, latitude = null, longitude = null, raioKm = null } = opcoes;
     const params = { 
@@ -98,7 +92,6 @@ class BuscaService {
     if (raioKm) params.raioKm = raioKm.toString();
 
     try {
-      // Mapear slug para ID se necessário
       const categoryMapping = {
         'hamburgueria': 1,
         'comida-japonesa': 2,
@@ -121,7 +114,6 @@ class BuscaService {
     }
   }
 
-  // Buscar empresa específica
   async buscarEmpresa(id) {
     try {
       return await api.get(`${API_CONFIG.ENDPOINTS.BUSCA.EMPRESA_DETALHES}/${id}`);

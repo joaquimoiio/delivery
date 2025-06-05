@@ -48,7 +48,6 @@ const Store = () => {
     }
   };
 
-  // Filter products based on search term
   useEffect(() => {
     if (!searchTerm.trim()) {
       setFilteredProducts(products);
@@ -149,7 +148,6 @@ const Store = () => {
           </div>
         </div>
 
-        {/* Seção de Produtos */}
         <div className="store-products-section">
           <div className="products-container">
             <h2>Cardápio</h2>
@@ -192,7 +190,6 @@ const Store = () => {
         </div>
       </div>
 
-      {/* Modal de Compra */}
       <ProductModal
         product={selectedProduct}
         isOpen={isModalOpen}

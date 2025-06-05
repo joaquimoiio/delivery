@@ -1,9 +1,7 @@
-// src/services/EmpresaService.js
 import { api } from '../config/api';
 import API_CONFIG from '../config/api';
 
 class EmpresaService {
-  // Buscar detalhes da empresa por ID
   async buscarEmpresaPorId(empresaId) {
     try {
       const endpoint = `${API_CONFIG.ENDPOINTS.BUSCA.EMPRESA_DETALHES}/${empresaId}`;
@@ -15,7 +13,6 @@ class EmpresaService {
     }
   }
 
-  // Buscar produtos da empresa
   async buscarProdutosEmpresa(empresaId) {
     try {
       const endpoint = API_CONFIG.ENDPOINTS.BUSCA.EMPRESA_PRODUTOS.replace('{empresaId}', empresaId);
@@ -27,7 +24,6 @@ class EmpresaService {
     }
   }
 
-  // Formatar preço
   formatarPreco(preco) {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',

@@ -1,15 +1,10 @@
-// src/services/PedidoService.js - SERVIÇO PARA GERENCIAR PEDIDOS
 import { api } from '../config/api';
 import API_CONFIG from '../config/api';
 
 class PedidoService {
-  
-  // ==================== MÉTODOS PARA CLIENTES ====================
-  
-  // Criar novo pedido
+
   async criarPedido(pedidoData) {
     try {
-      // Log authentication status
       const token = localStorage.getItem('authToken');
       if (!token) {
         throw new Error('Usuário não está autenticado. Faça login novamente.');
@@ -28,7 +23,6 @@ class PedidoService {
         data: pedidoData
       });
 
-      // Throw a more specific error
       if (!localStorage.getItem('authToken')) {
         throw new Error('Sessão expirada. Por favor, faça login novamente.');
       } else if (error.message.includes('500')) {
@@ -39,7 +33,6 @@ class PedidoService {
     }
   }
 
-  // Listar pedidos do cliente
   async listarMeusPedidos(page = 0, size = 20) {
     try {
       const params = { page, size };
@@ -50,7 +43,6 @@ class PedidoService {
     }
   }
 
-  // Buscar pedido por ID (cliente)
   async buscarMeuPedido(id) {
     try {
       const endpoint = API_CONFIG.ENDPOINTS.CLIENTE.PEDIDO_POR_ID.replace('{id}', id);
@@ -61,7 +53,6 @@ class PedidoService {
     }
   }
 
-  // Listar pedidos por status (cliente)
   async listarPedidosPorStatus(status, page = 0, size = 20) {
     try {
       const params = { page, size };
@@ -73,7 +64,6 @@ class PedidoService {
     }
   }
 
-  // Cancelar pedido
   async cancelarPedido(id) {
     try {
       const endpoint = API_CONFIG.ENDPOINTS.CLIENTE.CANCELAR_PEDIDO.replace('{id}', id);
@@ -84,7 +74,6 @@ class PedidoService {
     }
   }
 
-  // Obter estatísticas de pedidos do cliente
   async obterEstatisticasCliente() {
     try {
       return await api.get(API_CONFIG.ENDPOINTS.CLIENTE.ESTATISTICAS_PEDIDOS);
@@ -94,7 +83,6 @@ class PedidoService {
     }
   }
 
-  // Rastrear pedido
   async rastrearPedido(id) {
     try {
       const endpoint = API_CONFIG.ENDPOINTS.CLIENTE.RASTREAR_PEDIDO.replace('{id}', id);
@@ -105,7 +93,6 @@ class PedidoService {
     }
   }
 
-  // Pagar pedido
   async pagarPedido(id) {
     try {
       const endpoint = API_CONFIG.ENDPOINTS.CLIENTE.PAGAR_PEDIDO.replace('{id}', id);
@@ -116,9 +103,6 @@ class PedidoService {
     }
   }
 
-  // ==================== MÉTODOS PARA EMPRESAS ====================
-  
-  // Listar pedidos da empresa
   async listarPedidosEmpresa(page = 0, size = 20) {
     try {
       const params = { page, size };
@@ -129,11 +113,9 @@ class PedidoService {
     }
   }
 
-  // Atualizar status do pedido (empresa)
   async atualizarStatusPedido(id, status) {
     try {
       const endpoint = API_CONFIG.ENDPOINTS.EMPRESA.PEDIDO_STATUS.replace('{id}', id);
-      // Send status as query parameter
       const params = { status };
       return await api.patch(endpoint, {}, params);
     } catch (error) {
@@ -142,7 +124,6 @@ class PedidoService {
     }
   }
 
-  // Marcar pedido como entregue
   async marcarComoEntregue(pedidoId) {
     try {
       const endpoint = API_CONFIG.ENDPOINTS.EMPRESA.PEDIDO_ENTREGAR.replace('{id}', pedidoId);
@@ -153,7 +134,6 @@ class PedidoService {
     }
   }
 
-    // Marcar pedido como cancelado
   async marcarComoCancelado(pedidoId) {
     try {
       const endpoint = API_CONFIG.ENDPOINTS.EMPRESA.PEDIDO_CANCELADO.replace('{id}', pedidoId);
@@ -164,7 +144,6 @@ class PedidoService {
     }
   }
 
-  // Criar feedback/avaliação
   async criarFeedback(feedbackData) {
     try {
       const endpoint = API_CONFIG.ENDPOINTS.CLIENTE.FEEDBACK.replace('{pedidoId}', feedbackData.pedidoId);
@@ -187,7 +166,6 @@ class PedidoService {
     }
   }
 
-  // Listar feedbacks da empresa
   async listarFeedbacksEmpresa(page = 0, size = 20) {
     try {
       const params = { page, size };
@@ -198,24 +176,20 @@ class PedidoService {
     }
   }
 
-  // Verificar se pedido já foi avaliado
   async verificarFeedbackPedido(pedidoId) {
     try {
       const endpoint = API_CONFIG.ENDPOINTS.CLIENTE.FEEDBACK.replace('{pedidoId}', pedidoId);
       const response = await api.get(endpoint);
-      return response && response.id; // retorna true se existe feedback
+      return response && response.id;
     } catch (error) {
       if (error.response && error.response.status === 404) {
-        return false; // pedido não foi avaliado ainda
+        return false;
       }
       console.error('Erro ao verificar feedback do pedido:', error);
       return false;
     }
   }
 
-  // ==================== MÉTODOS UTILITÁRIOS ====================
-  
-  // Validar dados do pedido
   validarPedido(pedidoData) {
     const erros = [];
 
@@ -238,7 +212,6 @@ class PedidoService {
       });
     }
 
-    // Validate coordinates instead of address
     if (!pedidoData.latitude || !pedidoData.longitude) {
       erros.push('Coordenadas de entrega são obrigatórias');
     }
@@ -249,7 +222,6 @@ class PedidoService {
     };
   }
 
-  // Calcular total do pedido
   calcularTotalPedido(itens) {
     if (!itens || itens.length === 0) return 0;
     
@@ -259,9 +231,7 @@ class PedidoService {
     }, 0);
   }
 
-  // Formatar dados do pedido para envio
   formatarPedidoParaEnvio(pedidoData) {
-    // Ensure all required fields are present and properly formatted
     const formattedData = {
       empresaId: parseInt(pedidoData.empresaId),
       itens: pedidoData.itens.map(item => ({
@@ -277,18 +247,15 @@ class PedidoService {
       troco: pedidoData.troco || null
     };
 
-    // Validate coordinates
     if (isNaN(formattedData.latitude) || isNaN(formattedData.longitude)) {
       throw new Error('Coordenadas de entrega são obrigatórias');
     }
 
-    // Log the formatted data for debugging
     console.log('Pedido formatado:', formattedData);
 
     return formattedData;
   }
 
-  // Obter status em português
   obterStatusPortugues(status) {
     const statusMap = {
       'PENDENTE': 'Pendente',
@@ -303,34 +270,30 @@ class PedidoService {
     return statusMap[status] || status;
   }
 
-  // Obter cor do status
   obterCorStatus(status) {
     const coresMap = {
-      'PENDENTE': '#ffc107',      // Amarelo
-      'CONFIRMADO': '#17a2b8',    // Azul
-      'PREPARANDO': '#fd7e14',    // Laranja
-      'PRONTO': '#20c997',        // Verde claro
-      'SAIU_ENTREGA': '#6f42c1',  // Roxo
-      'ENTREGUE': '#28a745',      // Verde
-      'CANCELADO': '#dc3545'      // Vermelho
+      'PENDENTE': '#ffc107',      
+      'CONFIRMADO': '#17a2b8',    
+      'PREPARANDO': '#fd7e14',    
+      'PRONTO': '#20c997',        
+      'SAIU_ENTREGA': '#6f42c1',  
+      'ENTREGUE': '#28a745',      
+      'CANCELADO': '#dc3545'      
     };
     
     return coresMap[status] || '#6c757d';
   }
 
-  // Verificar se pedido pode ser cancelado
   podeCancelar(status) {
     const statusCancelaveis = ['PENDENTE', 'CONFIRMADO'];
     return statusCancelaveis.includes(status);
   }
 
-  // Verificar se pedido pode ser rastreado
   podeRastrear(status) {
     const statusRastreaveis = ['CONFIRMADO', 'PREPARANDO', 'PRONTO', 'SAIU_ENTREGA'];
     return statusRastreaveis.includes(status);
   }
 
-  // Formatação de valores
   formatarPreco(preco) {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',

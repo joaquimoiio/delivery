@@ -1,10 +1,8 @@
-// src/services/CategoriaService.js - SERVIÇO PARA GERENCIAR CATEGORIAS
 import { api } from '../config/api';
 import API_CONFIG from '../config/api';
 
 class CategoriaService {
   
-  // Listar todas as categorias
   async listarCategorias() {
     try {
       return await api.get(API_CONFIG.ENDPOINTS.PUBLICO.CATEGORIAS);
@@ -14,7 +12,6 @@ class CategoriaService {
     }
   }
 
-  // Buscar categoria por ID
   async buscarCategoriaPorId(id) {
     try {
       const endpoint = API_CONFIG.ENDPOINTS.PUBLICO.CATEGORIA_POR_ID.replace('{id}', id);
@@ -25,7 +22,6 @@ class CategoriaService {
     }
   }
 
-  // Buscar categoria por slug
   async buscarCategoriaPorSlug(slug) {
     try {
       const endpoint = API_CONFIG.ENDPOINTS.PUBLICO.CATEGORIA_POR_SLUG.replace('{slug}', slug);
@@ -36,7 +32,6 @@ class CategoriaService {
     }
   }
 
-  // Listar empresas de uma categoria
   async listarEmpresasPorCategoria(categoriaId, page = 0, size = 20) {
     try {
       const params = { page, size };
@@ -48,16 +43,13 @@ class CategoriaService {
     }
   }
 
-  // Listar produtos de uma categoria
   async listarProdutosPorCategoria(categorySlug, page = 0, size = 20) {
     try {
-      // Primeiro, buscar o ID da categoria usando o slug
       const categoria = await this.buscarCategoriaPorSlug(categorySlug);
       if (!categoria) {
         throw new Error('Categoria não encontrada');
       }
       
-      // Depois, buscar os produtos usando o ID da categoria
       const params = { page, size };
       const endpoint = API_CONFIG.ENDPOINTS.PUBLICO.CATEGORIA_PRODUTOS.replace('{id}', categoria.id);
       const response = await api.get(endpoint, params);
@@ -68,7 +60,6 @@ class CategoriaService {
     }
   }
 
-  // Obter estatísticas de uma categoria
   async obterEstatisticasCategoria(categoriaId) {
     try {
       const endpoint = API_CONFIG.ENDPOINTS.PUBLICO.CATEGORIA_ESTATISTICAS.replace('{id}', categoriaId);
@@ -79,7 +70,6 @@ class CategoriaService {
     }
   }
 
-  // Listar categorias populares
   async listarCategoriasPopulares(limite = 10) {
     try {
       const params = { limite };
@@ -90,7 +80,6 @@ class CategoriaService {
     }
   }
 
-  // Listar categorias que têm empresas
   async listarCategoriasComEmpresas() {
     try {
       return await api.get(API_CONFIG.ENDPOINTS.PUBLICO.CATEGORIAS_COM_EMPRESAS);
@@ -100,7 +89,6 @@ class CategoriaService {
     }
   }
 
-  // Buscar categorias por termo
   async buscarCategorias(termo) {
     try {
       const params = { termo };
@@ -111,19 +99,14 @@ class CategoriaService {
     }
   }
 
-  // ==================== MÉTODOS UTILITÁRIOS ====================
-  
-  // Obter ícone da categoria
   obterIconeCategoria(categoria) {
     return '🍽️';
   }
 
-  // Obter cor da categoria
   obterCorCategoria(categoria) {
     return '#95A5A6';
   }
 
-  // Formatar nome da categoria
   formatarNomeCategoria(nome) {
     if (!nome) return '';
     
@@ -133,21 +116,19 @@ class CategoriaService {
       .join(' ');
   }
 
-  // Gerar slug da categoria
   gerarSlug(nome) {
     if (!nome) return '';
     
     return nome
       .toLowerCase()
       .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '') // Remove acentos
-      .replace(/[^a-z0-9\s-]/g, '') // Remove caracteres especiais
-      .replace(/\s+/g, '-') // Substitui espaços por hífens
-      .replace(/-+/g, '-') // Remove hífens duplicados
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9\s-]/g, '') 
+      .replace(/\s+/g, '-') 
+      .replace(/-+/g, '-')
       .trim();
   }
 
-  // Validar dados da categoria
   validarCategoria(categoriaData) {
     const erros = [];
 
@@ -169,7 +150,6 @@ class CategoriaService {
     };
   }
 
-  // Ordenar categorias
   ordenarCategorias(categorias, criterio = 'nome') {
     if (!categorias || categorias.length === 0) return [];
     
@@ -196,13 +176,11 @@ class CategoriaService {
     }
   }
 
-  // Filtrar categorias
   filtrarCategorias(categorias, filtros = {}) {
     if (!categorias || categorias.length === 0) return [];
     
     let categoriasFiltradas = [...categorias];
-    
-    // Filtrar por termo de busca
+
     if (filtros.termo) {
       const termo = filtros.termo.toLowerCase();
       categoriasFiltradas = categoriasFiltradas.filter(categoria =>
@@ -210,15 +188,13 @@ class CategoriaService {
         categoria.descricao?.toLowerCase().includes(termo)
       );
     }
-    
-    // Filtrar apenas categorias com empresas
+
     if (filtros.apenasComEmpresas) {
       categoriasFiltradas = categoriasFiltradas.filter(categoria =>
         categoria.totalEmpresas > 0
       );
     }
-    
-    // Filtrar por número mínimo de empresas
+
     if (filtros.minimoEmpresas) {
       categoriasFiltradas = categoriasFiltradas.filter(categoria =>
         (categoria.totalEmpresas || 0) >= filtros.minimoEmpresas
@@ -228,7 +204,6 @@ class CategoriaService {
     return categoriasFiltradas;
   }
 
-  // Obter categorias em destaque
   obterCategoriasDestaque(categorias, limite = 6) {
     if (!categorias || categorias.length === 0) return [];
     

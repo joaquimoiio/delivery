@@ -95,7 +95,6 @@ const Payment = () => {
 
     setIsSubmitting(true);
 
-    // Ensure IDs are numbers
     const empresaId = parseInt(orderData.product.empresaId || orderData.product.empresa?.id);
     const produtoId = parseInt(orderData.product.id);
     
@@ -125,22 +124,18 @@ const Payment = () => {
       observacoes: orderData.observacao || ''
     };
 
-    // Log the request data for debugging
     console.log('Dados do pedido a ser enviado:', pedidoParaEnvio);
 
     try {
-      // Validar pedido antes de enviar
       const validacao = PedidoService.validarPedido(pedidoParaEnvio);
       if (!validacao.valido) {
         alert('Erro de validação:\n' + validacao.erros.join('\n'));
         return;
       }
 
-      // Formatar dados do pedido
       const pedidoFormatado = PedidoService.formatarPedidoParaEnvio(pedidoParaEnvio);
       console.log('Dados do pedido formatado:', pedidoFormatado);
 
-      // Enviar pedido
       const response = await PedidoService.criarPedido(pedidoFormatado);
       console.log('Resposta do servidor:', response);
       localStorage.removeItem('currentOrder');

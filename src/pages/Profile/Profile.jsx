@@ -1,4 +1,3 @@
-// src/pages/Profile/Profile.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import Navbar from '../../components/Navbar/Navbar';
@@ -42,10 +41,8 @@ const Profile = () => {
     setIsLoading(true);
 
     try {
-      // Simular salvamento
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Atualizar contexto do usuário
       const updatedUser = { ...user, ...formData };
       login(updatedUser);
       

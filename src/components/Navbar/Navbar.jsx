@@ -12,7 +12,7 @@ const Navbar = () => {
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
-  // Fechar dropdown quando clicar fora
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -51,12 +51,10 @@ const Navbar = () => {
   return (
     <nav className="navbar">
       <div className="navbar-container">
-        {/* Logo */}
         <Link to="/" className="navbar-brand">
-          <div className="logo-placeholder"></div>
+          <div className="logo-placeholder">Qfome</div>
         </Link>
 
-        {/* Menu de navegação */}
         <ul className="navbar-menu">
           <li>
             <Link to="/categoria/hamburgueria" className="navbar-link">
@@ -75,7 +73,6 @@ const Navbar = () => {
           </li>
         </ul>
 
-        {/* Área direita */}
         <div className="navbar-right">
           {isLoggedIn ? (
             <>
@@ -95,7 +92,6 @@ const Navbar = () => {
                 </form>
               </div> */}
 
-              {/* Dropdown do perfil */}
               <div className="profile-dropdown" ref={dropdownRef}>
                 <button 
                   className="profile-button" 

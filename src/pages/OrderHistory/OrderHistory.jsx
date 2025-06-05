@@ -28,7 +28,6 @@ const OrderHistory = () => {
         response = await PedidoService.listarPedidosPorStatus(filter.toUpperCase());
       }
       
-      // Transform the API response to match the component's expected format
       const transformedOrders = await Promise.all((response?.content || []).map(async order => {
         const hasBeenEvaluated = await PedidoService.verificarFeedbackPedido(order.id);
         return {
@@ -76,7 +75,7 @@ const OrderHistory = () => {
       });
       alert('Avaliação enviada com sucesso!');
       handleCloseFeedbackModal();
-      loadOrders(); // Reload orders to update feedback status
+      loadOrders();
     } catch (error) {
       console.error('Erro ao enviar avaliação:', error);
       alert('Erro ao enviar avaliação. Tente novamente.');
